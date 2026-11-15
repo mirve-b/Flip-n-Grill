@@ -196,9 +196,9 @@ On every frame, each part works out where it should be from `progress`. The scro
 
 - **Lazy-loaded 3D.** The three.js code loads in its own chunk, so the page text appears first.
 - **Only visible scenes render.** A 3D canvas stops drawing when it's off screen.
-- **Adaptive resolution.** If the frame rate drops, the render resolution lowers itself automatically.
+- **Adaptive resolution.** If the frame rate genuinely drops, the render resolution steps down a little. It never goes below a sharp floor and never flips back and forth, because each change causes a small hitch.
 - **Shader precompile.** Shaders compile up front to avoid a stutter the first time something appears.
-- **Lite mode** is switched on automatically for devices with ≤4 CPU cores, ≤4 GB RAM or Data Saver. It uses 1× resolution, no antialiasing, fewer sparkles and lighter effects.
+- **Lite mode** turns on automatically for weak GPUs (old Mali / Adreno / PowerVR chips), Data Saver, or non-Apple devices with ≤4 CPU cores or ≤4 GB RAM. iPhones skip the CPU/RAM test because Safari hides those numbers. Lite mode uses a lower resolution and lighter effects.
 - **No-WebGL fallback.** If WebGL isn't available, flat SVG burgers replace the 3D.
 - **Reduced motion.** Heavy animation is skipped for users who ask their operating system for less motion.
 

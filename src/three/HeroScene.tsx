@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -69,6 +69,17 @@ function Rig({ gradient }: { gradient: THREE.Texture }) {
   );
 }
 
+/** On tall phone screens, step the camera back so the burger sits inside the title instead of covering it. */
+function FitCamera() {
+  const size = useThree((s) => s.size);
+  const z = 10 / THREE.MathUtils.clamp(size.width / size.height / 0.95, 0.62, 1);
+  // set every frame: R3F re-applies the Canvas `camera` prop on re-renders, which would undo a one-off set
+  useFrame(({ camera }) => {
+    camera.position.z = z;
+  });
+  return null;
+}
+
 function HeroScene() {
   const gradient = useToonGradient();
   const wrap = useRef<HTMLDivElement>(null);
@@ -92,6 +103,7 @@ function HeroScene() {
       >
         <AdaptiveDpr />
         <InkResolution />
+        <FitCamera />
         <ambientLight intensity={1.1} />
         <directionalLight position={[3, 5, 4]} intensity={2.4} />
         <directionalLight position={[-4, -2, -3]} intensity={0.5} color="#F1D7B3" />

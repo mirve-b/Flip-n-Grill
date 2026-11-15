@@ -109,7 +109,7 @@ export function Nav() {
     <header className="nav" id="top">
       <a href="#top" className="nav__brand" aria-label="Flip & Grill home">
         <img src="/logo-sm.png" alt="" width="44" height="44" />
-        <span>FLIP &amp; GRILL</span>
+        <span>FLIP <b>&amp;</b> GRILL</span>
       </a>
       <nav className="nav__links" aria-label="Main">
         <a href="#menu">Menu</a>
