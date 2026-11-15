@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flip-and-grill",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5288"],
+      "port": 5288
+    },
+    {
+      "name": "flip-and-grill-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--", "--port", "5289"],
+      "port": 5289
+    }
+  ]
+}
