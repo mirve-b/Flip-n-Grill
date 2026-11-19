@@ -64,69 +64,71 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background-position: calc(var(--dot) / 2 - var(--gap) / 2) calc(var(--dot) / 2 - var(--gap) / 2);
 }
 
-/* ---------- hero: collage on a fixed-ratio stage ---------- */
+/* ---------- hero: collage on a stage that fills the window ---------- */
 .hero { min-height: 100svh; display: grid; align-content: center; background-color: var(--paper); background-image: url(/art/paper-teal.webp); background-size: cover; background-position: center; overflow: hidden; }
 .hero__stage {
-  position: relative; container-type: inline-size;
-  /* the design's canvas is 1412 x 926: the stage keeps that shape and fills the screen's width */
-  width: min(100%, calc(125svh * 1412 / 926)); aspect-ratio: 1412 / 926; margin: 0 auto;
+  /* fills the visible window (whatever the browser bars leave). Pieces are placed by % across and % down,
+     and sized in --u: 1% of the design's width (1412 x 926), shrunk to fit whichever side is tighter,
+     so nothing is ever cropped or stretched */
+  position: relative; container-type: size; margin: 0 auto;
+  width: 100%; height: min(100svh, calc(100vw * 926 / 1412 * 1.25));
+  --u: min(1cqw, calc(1cqh * 1412 / 926));
 }
 .h { position: absolute; user-select: none; -webkit-user-drag: none; }
 
 /* =====================================================================
    HERO LAYOUT: every size and position in the hero lives in this block.
-   - left / top : where the piece's top-left corner sits, in % of the stage
-   - width      : the piece's size, in % of the stage width (height follows the image)
-   - font-size  : text size, in cqw (1cqw = 1% of the stage width)
+   - left / top : where the piece's top-left corner sits, in % of the stage's width / height
+   - width      : the piece's size, in --u (1u = 1% of the design's width); height follows the image
+   - font-size  : text size, also in --u, e.g. calc(2.2 * var(--u))
    - rotate     : tilt; z-index: which piece sits on top (higher = in front)
-   Desktop stage is the design's 1412 x 926 canvas. Phones (760px and narrower) use the second
-   list below, on a 390 x 860 stage.
+   Phones (760px and narrower) use the second list below, where --u is simply 1% of the screen width.
    ===================================================================== */
-.hero__title          { z-index: 4; left: 33.9%; top: 9.2%; font-size: 8.6cqw; }
-.hero__grill          { margin-left: 10.8cqw; }  /* how far GRILL is pushed right of FLIP */
+.hero__title          { z-index: 4; left: 33.9%; top: 9.2%; font-size: calc(8.6 * var(--u)); }
+.hero__grill          { margin-left: calc(10.8 * var(--u)); }  /* how far GRILL is pushed right of FLIP */
 .h--smiley            { display: none; }          /* not in the design; give it left/top/width to bring it back */
 .hero__label--teal    { left: 61.6%; top: 14.6%; rotate: -4deg; padding: .22em 2.05em; }   /* "Stall at IBA Karachi" */
 .hero__label--orange  { left: 63.1%; top: 20.4%; rotate: 0deg; padding: .1em 1.4em; }     /* "Catering all over karachi" */
-.hero__label          { font-size: 2.2cqw; letter-spacing: .1em; line-height: 1.05; }
-.h--burst-a           { z-index: 1; left: 48%; top: 12%; width: 31%; }
-.h--burst-b           { z-index: 1; left: 31%; top: 58%; width: 28%; rotate: 165deg; }
-.h--burger            { z-index: 3; left: 33.3%; top: 31.9%; width: 33.3%; }
-.boy--1               { left: 21.6%; top: 24.6%; width: 13.2%; }    /* Omar 1 */
-.boy--2               { left: 67.8%; top: 38.6%; width: 12.7%; }    /* Omar 2 */
+.hero__label          { font-size: calc(2.2 * var(--u)); letter-spacing: .1em; line-height: 1.05; }
+.h--burst-a           { z-index: 1; left: 48%; top: 12%; width: calc(31 * var(--u)); }
+.h--burst-b           { z-index: 1; left: 31%; top: 58%; width: calc(28 * var(--u)); rotate: 165deg; }
+.h--burger            { z-index: 3; left: 33.3%; top: 31.9%; width: calc(33.3 * var(--u)); }
+.boy--1               { left: 21.6%; top: 24.6%; width: calc(13.2 * var(--u)); }    /* Omar 1 */
+.boy--2               { left: 67.8%; top: 38.6%; width: calc(12.7 * var(--u)); }    /* Omar 2 */
 .boy--1 .hero__tag    { left: 28%; top: 104%; rotate: -8deg; }      /* "I flip", relative to Omar 1 */
 .boy--2 .hero__tag    { left: 22%; top: 101%; rotate: -6deg; }      /* "I grill", relative to Omar 2 */
-.hero__tag            { font-size: 1.45cqw; }
-.boy__say             { font-size: 1.3cqw; }                        /* OUCH! / Careful! bubbles */
-.h--paper             { z-index: 2; left: 5.8%; top: 11.4%; width: 19.7%; }  /* IBA Karachi paper */
-.h--plate             { z-index: 2; left: 3%; top: 61.3%; width: 31%; }      /* menu card + plate */
-.h--two               { z-index: 2; left: 76.7%; top: 27%; width: 16.6%; }   /* two Omars photo */
-.h--card              { z-index: 2; left: 80.7%; top: 41%; width: 16.4%; }   /* smash card */
-.h--note              { z-index: 1; left: 71.7%; top: 53.8%; width: 22.5%; } /* sticky note */
-.h--mozzy             { z-index: 3; left: 82.2%; top: 62%; width: 11.2%; }   /* mozzy sticks */
-.hero__ctas           { z-index: 6; left: 35.3%; top: 81.3%; gap: 1.5cqw; }  /* the two buttons */
-.hero__ctas .btn      { font-size: 1.8cqw; padding: .3em .9em; letter-spacing: .07em; }
+.hero__tag            { font-size: calc(1.45 * var(--u)); }
+.boy__say             { font-size: calc(1.3 * var(--u)); }                        /* OUCH! / Careful! bubbles */
+.h--paper             { z-index: 2; left: 5.8%; top: 11.4%; width: calc(19.7 * var(--u)); }  /* IBA Karachi paper */
+.h--plate             { z-index: 2; left: 3%; top: 61.3%; width: calc(31 * var(--u)); }      /* menu card + plate */
+.h--two               { z-index: 2; left: 76.7%; top: 27%; width: calc(16.6 * var(--u)); }   /* two Omars photo */
+.h--card              { z-index: 2; left: 80.7%; top: 41%; width: calc(16.4 * var(--u)); }   /* smash card */
+.h--note              { z-index: 1; left: 71.7%; top: 53.8%; width: calc(22.5 * var(--u)); } /* sticky note */
+.h--mozzy             { z-index: 3; left: 82.2%; top: 62%; width: calc(11.2 * var(--u)); }   /* mozzy sticks */
+.hero__ctas           { z-index: 6; left: 35.3%; top: 81.3%; gap: calc(1.5 * var(--u)); }  /* the two buttons */
+.hero__ctas .btn      { font-size: calc(1.8 * var(--u)); padding: .3em .9em; letter-spacing: .07em; }
 
 @media (max-width: 760px) {
   /* phones show a simpler poster: title, labels, burger, two bursts and the buttons */
   .h--smiley, .h--paper, .h--plate, .h--two, .h--card, .h--note, .h--mozzy, .boy { display: none; }
   /* the stage fills the screen: title + labels hang from the top (under the nav), the buttons sit at
-     the bottom, and the burger centres itself in the space between. cqw = % of the screen width */
-  .hero__stage          { width: 100%; aspect-ratio: auto; height: max(100svh, calc(100px + 135vw)); }
-  .hero__title          { left: 13.5%; top: 88px; font-size: 21cqw; }
-  .hero__grill          { margin-left: 19cqw; }
-  .hero__label--teal    { left: 15.8%; top: calc(88px + 38cqw); rotate: -4deg; padding: .25em 1.6em; }
-  .hero__label--orange  { left: 19%; top: calc(88px + 47cqw); rotate: 0deg; padding: .12em 1em; }
-  .hero__label          { font-size: 5.3cqw; }
-  .h--burger            { left: 14%; top: calc(44px + 47% - 8.7cqw); width: 72%; }
-  .h--burst-a           { left: 50%; top: calc(44px + 47% - 19.5cqw); width: 54%; rotate: 10deg; }
-  .h--burst-b           { left: -2%; top: calc(44px + 47% + 22cqw); width: 58%; rotate: 165deg; }
-  .hero__ctas           { left: 53%; top: auto; bottom: 6%; translate: -50% 0; gap: 3cqw; }
-  .hero__ctas .btn      { font-size: 3.9cqw; }
+     the bottom, and the burger centres itself in the space between. --u = 1% of the screen width */
+  .hero__stage          { width: 100%; height: max(100svh, calc(100px + 135vw)); --u: 1cqw; }
+  .hero__title          { left: 13.5%; top: 88px; font-size: calc(21 * var(--u)); }
+  .hero__grill          { margin-left: calc(19 * var(--u)); }
+  .hero__label--teal    { left: 15.8%; top: calc(88px + calc(38 * var(--u))); rotate: -4deg; padding: .25em 1.6em; }
+  .hero__label--orange  { left: 19%; top: calc(88px + calc(47 * var(--u))); rotate: 0deg; padding: .12em 1em; }
+  .hero__label          { font-size: calc(5.3 * var(--u)); }
+  .h--burger            { left: 14%; top: calc(44px + 47% - calc(8.7 * var(--u))); width: 72%; }
+  .h--burst-a           { left: 50%; top: calc(44px + 47% - calc(19.5 * var(--u))); width: 54%; rotate: 10deg; }
+  .h--burst-b           { left: -2%; top: calc(44px + 47% + calc(22 * var(--u))); width: 58%; rotate: 165deg; }
+  .hero__ctas           { left: 53%; top: auto; bottom: 6%; translate: -50% 0; gap: calc(3 * var(--u)); }
+  .hero__ctas .btn      { font-size: calc(3.9 * var(--u)); }
 }
 /* ===================== end of HERO LAYOUT ===================== */
 
 /* how the pieces look (no positions below this line) */
-.hero__title { position: absolute; font-weight: 900; line-height: .84; letter-spacing: .01em; color: var(--orange); text-shadow: .3cqw .35cqw 0 var(--ink), 0 .6cqw 1.2cqw rgba(0, 0, 0, .3); }
+.hero__title { position: absolute; font-weight: 900; line-height: .84; letter-spacing: .01em; color: var(--orange); text-shadow: calc(.3 * var(--u)) calc(.35 * var(--u)) 0 var(--ink), 0 calc(.6 * var(--u)) calc(1.2 * var(--u)) rgba(0, 0, 0, .3); }
 .hero__title span { display: block; }
 .hero__flip small { font-size: .5em; font-weight: 800; letter-spacing: 0; margin-left: .04em; vertical-align: .35em; }
 
@@ -172,11 +174,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .boy__dodge { transition: transform .45s cubic-bezier(.2, .8, .3, 1); }
 .boy__float { position: relative; animation: float 3.6s ease-in-out infinite; }
 .boy--2 .boy__float { animation-delay: -1.8s; }
-.boy img { width: 100%; filter: drop-shadow(0 .4cqw .5cqw rgba(0,0,0,.25)); user-select: none; -webkit-user-drag: none; }
+.boy img { width: 100%; filter: drop-shadow(0 calc(.4 * var(--u)) calc(.5 * var(--u)) rgba(0,0,0,.25)); user-select: none; -webkit-user-drag: none; }
 @keyframes float { 50% { transform: translateY(-4%); } }
 .boy__say {
   position: absolute; z-index: 2; bottom: 92%; left: 50%; white-space: nowrap; pointer-events: none;
-  line-height: 1; color: var(--ink); background: var(--cream); border: .15cqw solid var(--ink); border-radius: 1cqw; padding: .45em .7em;
+  line-height: 1; color: var(--ink); background: var(--cream); border: calc(.15 * var(--u)) solid var(--ink); border-radius: calc(1 * var(--u)); padding: .45em .7em;
   opacity: 0; transform: translate(-50%, 8px) scale(.6); transform-origin: 50% 120%; transition: opacity .2s, transform .3s cubic-bezier(.3, 1.6, .5, 1);
 }
 .boy--1 .boy__say { color: var(--red); }
@@ -190,11 +192,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .hero__tag {
   z-index: 5; font-family: var(--f-sans); font-weight: 700; text-transform: uppercase; white-space: nowrap; line-height: 1.5;
-  background: var(--cream); color: var(--teal); border: .12cqw solid rgba(29, 19, 14, .3); border-radius: 999px; padding: .1em 1.5em; rotate: -3deg;
+  background: var(--cream); color: var(--teal); border: calc(.12 * var(--u)) solid rgba(29, 19, 14, .3); border-radius: 999px; padding: .1em 1.5em; rotate: -3deg;
 }
 
 .hero__ctas { position: absolute; display: flex; }
-.hero__ctas .btn { border-width: .17cqw; border-radius: .6cqw; box-shadow: .3cqw .3cqw 0 var(--ink); }
+.hero__ctas .btn { border-width: calc(.17 * var(--u)); border-radius: calc(.6 * var(--u)); box-shadow: calc(.3 * var(--u)) calc(.3 * var(--u)) 0 var(--ink); }
 
 /* nav: fixed over every section (Hero.tsx flips it to dark text over orange sections) */
 .nav {
@@ -213,7 +215,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* phones: the hero pieces get thicker borders, and the nav becomes a burger menu */
 @media (max-width: 760px) {
-  .hero__ctas .btn { border-width: .5cqw; border-radius: 1.6cqw; box-shadow: .8cqw .8cqw 0 var(--ink); }
+  .hero__ctas .btn { border-width: calc(.5 * var(--u)); border-radius: calc(1.6 * var(--u)); box-shadow: calc(.8 * var(--u)) calc(.8 * var(--u)) 0 var(--ink); }
   .nav { left: 12px; right: 12px; top: 10px; padding: 6px 6px 6px 16px; }
   .nav__brand { font-size: 22px; position: relative; z-index: 2; }
   .nav__toggle {
