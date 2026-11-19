@@ -17,12 +17,12 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
-html { scroll-behavior: smooth; scroll-padding-top: 16px; overscroll-behavior-y: none; background: var(--teal); }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; overscroll-behavior-y: none; overflow-x: clip; background: var(--teal); }
 body { overscroll-behavior-y: none; }  /* up/down only, so the back/forward swipe still works */
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
   font-family: var(--f-sans); font-size: 16px; line-height: 1.5; color: var(--ink);
-  background: var(--orange); -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  background: var(--orange); -webkit-font-smoothing: antialiased; overflow-x: clip;
   font-synthesis-weight: none; 
 }
 img { display: block; max-width: 100%; height: auto; }
@@ -82,7 +82,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
    - width      : the piece's size, in --u (1u = 1% of the design's width); height follows the image
    - font-size  : text size, also in --u, e.g. calc(2.2 * var(--u))
    - rotate     : tilt; z-index: which piece sits on top (higher = in front)
-   Phones (760px and narrower) use the second list below, where --u is simply 1% of the screen width.
+   Phones (760px and narrower) and portrait tablets (iPad) use the second list below.
    ===================================================================== */
 .hero__title          { z-index: 4; left: 33.9%; top: 9.2%; font-size: calc(8.6 * var(--u)); }
 .hero__grill          { margin-left: calc(10.8 * var(--u)); }  /* how far GRILL is pushed right of FLIP */
@@ -108,20 +108,22 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .hero__ctas           { z-index: 6; left: 35.3%; top: 81.3%; gap: calc(1.5 * var(--u)); }  /* the two buttons */
 .hero__ctas .btn      { font-size: calc(1.8 * var(--u)); padding: .3em .9em; letter-spacing: .07em; }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1024px) {
   /* phones show a simpler poster: title, labels, burger, two bursts and the buttons */
   .h--smiley, .h--paper, .h--plate, .h--two, .h--card, .h--note, .h--mozzy, .boy { display: none; }
   /* the stage fills the screen: title + labels hang from the top (under the nav), the buttons sit at
      the bottom, and the burger centres itself in the space between. --u = 1% of the screen width */
-  .hero__stage          { width: 100%; height: max(100svh, calc(100px + 135vw)); --u: 1cqw; }
-  .hero__title          { left: 13.5%; top: 88px; font-size: calc(21 * var(--u)); }
+  /* --u: 1% of a phone's width, held back on tall-but-wide screens (iPad portrait) so it all fits the height;
+     pieces are placed from the centre line so they stay centred at any size */
+  .hero__stage          { --u: min(1vw, calc((100svh - 100px) / 135)); width: 100%; height: max(100svh, calc(100px + 135 * var(--u))); }
+  .hero__title          { left: calc(50% - 36.5 * var(--u)); top: 88px; font-size: calc(21 * var(--u)); }
   .hero__grill          { margin-left: calc(19 * var(--u)); }
-  .hero__label--teal    { left: 15.8%; top: calc(88px + calc(38 * var(--u))); rotate: -4deg; padding: .25em 1.6em; }
-  .hero__label--orange  { left: 19%; top: calc(88px + calc(47 * var(--u))); rotate: 0deg; padding: .12em 1em; }
+  .hero__label--teal    { left: calc(50% - 34.2 * var(--u)); top: calc(88px + calc(38 * var(--u))); rotate: -4deg; padding: .25em 1.6em; }
+  .hero__label--orange  { left: calc(50% - 31 * var(--u)); top: calc(88px + calc(47 * var(--u))); rotate: 0deg; padding: .12em 1em; }
   .hero__label          { font-size: calc(5.3 * var(--u)); }
-  .h--burger            { left: 14%; top: calc(44px + 47% - calc(8.7 * var(--u))); width: 72%; }
-  .h--burst-a           { left: 50%; top: calc(44px + 47% - calc(19.5 * var(--u))); width: 54%; rotate: 10deg; }
-  .h--burst-b           { left: -2%; top: calc(44px + 47% + calc(22 * var(--u))); width: 58%; rotate: 165deg; }
+  .h--burger            { left: calc(50% - 36 * var(--u)); top: calc(44px + 47% - calc(8.7 * var(--u))); width: calc(72 * var(--u)); }
+  .h--burst-a           { left: 50%; top: calc(44px + 47% - calc(19.5 * var(--u))); width: calc(54 * var(--u)); rotate: 10deg; }
+  .h--burst-b           { left: calc(50% - 52 * var(--u)); top: calc(44px + 47% + calc(22 * var(--u))); width: calc(58 * var(--u)); rotate: 165deg; }
   .hero__ctas           { left: 53%; top: auto; bottom: 6%; translate: -50% 0; gap: calc(3 * var(--u)); }
   .hero__ctas .btn      { font-size: calc(3.9 * var(--u)); }
 }
@@ -145,28 +147,40 @@ button, input, select, textarea { font: inherit; color: inherit; }
   100% { transform: scale(1, 1); }
 }
 
-/* sparkles around the burger: each one twinkles and every so often glitches (jumps + splits into colour) */
+/* sparkles (Sparks.tsx): each one twinkles and every so often glitches: jumps, with a pink/cyan copy
+   flashing behind it. Only transform and opacity animate, so the glow (a filter) is painted once and
+   the iPad's graphics chip does the rest. --d is each sparkle's delay. */
 .sparks { position: absolute; inset: 0; pointer-events: none; }
 .spark {
+  --shape: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
   position: absolute; width: var(--z); aspect-ratio: 1; margin: calc(var(--z) / -2) 0 0 calc(var(--z) / -2);
+  filter: drop-shadow(0 0 5px rgba(255, 236, 150, .9)); will-change: transform, opacity;
   animation: twinkle 2.6s ease-in-out infinite, glitch 3.4s steps(1) infinite;
+  animation-delay: var(--d), calc(var(--d) * 1.7);
 }
-/* the shape is drawn on ::before so the glitch's colour split (a filter on .spark) isn't clipped away */
-.spark::before { content: ""; position: absolute; inset: 0; background: var(--c); clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); }
-.spark--plus::before { clip-path: polygon(40% 0, 60% 0, 60% 40%, 100% 40%, 100% 60%, 60% 60%, 60% 100%, 40% 100%, 40% 60%, 0 60%, 0 40%, 40% 40%); }
-.spark--dot::before { clip-path: circle(50%); }
+.spark--plus { --shape: polygon(40% 0, 60% 0, 60% 40%, 100% 40%, 100% 60%, 60% 60%, 60% 100%, 40% 100%, 40% 60%, 0 60%, 0 40%, 40% 40%); }
+.spark--dot { --shape: circle(50%); }
+.spark::before, .spark::after { content: ""; position: absolute; inset: 0; clip-path: var(--shape); }
+.spark::before { background: var(--c); }
+.spark::after { z-index: -1; background: #ff2fd0; opacity: 0; animation: split 3.4s steps(1) infinite; animation-delay: calc(var(--d) * 1.7); }
 @keyframes twinkle {
-  0%, 100% { opacity: 0; scale: .2; rotate: 0deg; }
-  25% { opacity: 1; scale: 1.1; }
-  50% { opacity: .85; scale: .75; rotate: 45deg; }
-  75% { opacity: 1; scale: 1; }
+  0%, 100% { opacity: 0; transform: scale(.2); }
+  25% { opacity: 1; transform: scale(1.1); }
+  50% { opacity: .85; transform: scale(.75) rotate(45deg); }
+  75% { opacity: 1; transform: scale(1); }
 }
 @keyframes glitch {
-  0%, 86%, 100% { translate: 0 0; filter: drop-shadow(0 0 .45cqw rgba(255, 236, 150, .95)); }
-  88% { translate: .5cqw -.3cqw; filter: drop-shadow(3px 0 #ff2fd0) drop-shadow(-3px 0 #00e5ff); }
-  90% { translate: -.6cqw .2cqw; filter: drop-shadow(-3px 0 #ff2fd0) drop-shadow(3px 0 #00e5ff); }
-  92% { translate: .2cqw .5cqw; filter: drop-shadow(0 0 .45cqw rgba(255, 236, 150, .95)); }
-  94% { translate: -.3cqw -.4cqw; filter: drop-shadow(2px 0 #00e5ff); }
+  0%, 86%, 100% { translate: 0 0; }
+  88% { translate: 5px -3px; }
+  90% { translate: -6px 2px; }
+  92% { translate: 2px 5px; }
+  94% { translate: -3px -4px; }
+}
+@keyframes split {
+  0%, 86%, 92%, 100% { opacity: 0; translate: 0 0; background: #ff2fd0; }
+  88% { opacity: .9; translate: 4px 0; }
+  90% { opacity: .9; translate: -4px 0; background: #00e5ff; }
+  94% { opacity: .8; translate: 3px 0; background: #00e5ff; }
 }
 
 /* the two Omars: placed by .boy, dodge the cursor (JS moves .boy__dodge), float on a loop, speak when it's close */
@@ -214,7 +228,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .nav__toggle { display: none; }
 
 /* phones: the hero pieces get thicker borders, and the nav becomes a burger menu */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1024px) {
   .hero__ctas .btn { border-width: calc(.5 * var(--u)); border-radius: calc(1.6 * var(--u)); box-shadow: calc(.8 * var(--u)) calc(.8 * var(--u)) 0 var(--ink); }
   .nav { left: 12px; right: 12px; top: 10px; padding: 6px 6px 6px 16px; }
   .nav__brand { font-size: 22px; position: relative; z-index: 2; }
@@ -427,7 +441,7 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
   .footer__grid { grid-template-columns: 1fr 1fr; }
   .footer__grid > :first-child { grid-column: 1 / -1; }
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1024px) {
   .story { padding-top: 0; }
   .story__inner { flex-direction: column-reverse; align-items: stretch; min-height: 0; padding-top: 32px; }
   .story__text { width: 100%; padding-block: 8px 44px; }
@@ -525,62 +539,18 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
 @keyframes print { from { clip-path: inset(0 0 100% 0); transform: translateY(-40px); } to { clip-path: inset(0 0 0 0); transform: none; } }
 
 /* ---------- scroll-linked motion ----------
-   App.tsx sets --p on every section: 0 as it enters at the bottom of the screen, .5 when centred,
-   1 as it leaves at the top. Pieces move with translate / rotate / scale, which stack on top of their
-   entrance and hover transforms. */
-
-/* hero: as you scroll away the collage blows apart, the burger grows, the title flies up */
-.hero { --e: max(0, (var(--p) - .5) * 2); }
-.hero__title { translate: 0 calc(var(--e) * -22cqw); }
-.h--burger { scale: calc(1 + var(--e) * .3); }
-.h--burst-a, .h--burst-b { scale: calc(1 + var(--e) * .8); }
-.hero__label--teal { translate: calc(var(--e) * -30cqw) 0; }
-.hero__label--orange { translate: calc(var(--e) * 30cqw) 0; }
-.h--paper { translate: calc(var(--e) * -14cqw) calc(var(--e) * -8cqw); }
-.h--plate { translate: calc(var(--e) * -16cqw) calc(var(--e) * 6cqw); }
-.h--two, .h--card { translate: calc(var(--e) * 14cqw) calc(var(--e) * -8cqw); }
-.h--note, .h--mozzy { translate: calc(var(--e) * 16cqw) calc(var(--e) * 6cqw); }
-.boy--1 { translate: calc(var(--e) * -20cqw) calc(var(--e) * -4cqw); }
-.boy--2 { translate: calc(var(--e) * 20cqw) calc(var(--e) * -4cqw); }
-.h--smiley { rotate: calc(var(--e) * 180deg); }
-.hero__ctas { opacity: calc(1 - var(--e) * 1.6); }
-
-/* the name strips scrub sideways with the scroll */
-.strip__track { translate: calc(var(--p) * -320px) 0; }
-
-/* 01 story: the file and folder float at different speeds, SMASH! slides in */
-.story__file { translate: 0 calc((var(--p) - .5) * -90px); }
-.story__tape { translate: 0 calc((var(--p) - .5) * -90px); }
-.story__folder { translate: 0 calc((var(--p) - .5) * 70px); }
-.story__dots--a { translate: 0 calc((var(--p) - .5) * -160px); }
-.story__dots--b, .story__dots--c { translate: 0 calc((var(--p) - .5) * 120px); }
-.story__smash { translate: calc(max(0, var(--p) - .5) * 120px) 0; }
-
-/* 02 investigation: the burger art floats and tilts, the title glides */
-.invest__art { translate: 0 calc((var(--p) - .5) * -110px); rotate: calc((var(--p) - .5) * 10deg); }
-.invest__title { translate: calc((var(--p) - .5) * -60px) 0; }
-
-/* 03 menu: the big MENU slides, the receipt drifts up */
-.menu__title { translate: calc((var(--p) - .5) * 120px) 0; }
-.receipt-wrap { translate: 0 calc((var(--p) - .5) * -60px); }
-
-/* 04 stall: the pin bobs above the map, the box rises */
-.stall__title { translate: calc((var(--p) - .5) * -90px) 0; }
-.stall__map { translate: 0 calc((var(--p) - .5) * -40px); }
-
-/* footer band + booking page */
-.footer__big { translate: calc((var(--p) - .5) * -140px) 0; }
-.cater__steps li:nth-child(1) { translate: 0 calc((var(--p) - .5) * 40px); }
-.cater__steps li:nth-child(3) { translate: 0 calc((var(--p) - .5) * -40px); }
+   Done in src/scrollMotion.ts (it moves only the pieces that move). Sections far off screen get
+   .is-off, which pauses their looping animations so the iPad isn't drawing what nobody can see. */
+.is-off, .is-off * { animation-play-state: paused !important; }
+.hero__title, .h--burger, .h--burst-a, .h--burst-b, .hero__label, .h--lift, .boy, .boy__float, .strip__track,
+.story__file, .story__folder, .invest__art, .receipt-wrap, .stall__map { will-change: transform; }
 
 /* ---------- phones: centre the text of 01, 02, 03 and the "Hungry yet?" band ---------- */
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1024px) {
   .story__text, .invest__text, .menu__intro, .footer__ctain { text-align: center; }
   .story__text p, .menu__sub, .invest__text > p:last-child { margin-inline: auto; }
   .footer__ctain { flex-direction: column; justify-content: center; }
   .footer__btns { justify-content: center; }
-  /* centred headings stay put instead of sliding sideways on scroll */
-  .story__smash, .invest__title, .menu__title, .footer__big { translate: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

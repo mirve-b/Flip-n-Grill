@@ -70,6 +70,7 @@ export function Hero() {
       if (!frame) frame = requestAnimationFrame(update);
     };
     const leave = () => {
+      if (px === -1e4) return; // nothing to reset (always the case while scrolling on touch screens)
       px = py = -1e4;
       if (!frame) frame = requestAnimationFrame(update);
     };

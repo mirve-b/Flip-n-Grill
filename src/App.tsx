@@ -8,6 +8,7 @@ import { Menu } from "./components/Menu";
 import { Stall } from "./components/Stall";
 import { Catering } from "./components/Catering";
 import { Footer } from "./components/Footer";
+import { startScrollMotion } from "./scrollMotion";
 
 /** Two pages: the home page, and the booking page at #contact. */
 type Page = "home" | "contact";
@@ -48,39 +49,8 @@ export default function App() {
     };
   }, [page]);
 
-  // scroll-linked motion: every section gets --p (0 entering at the bottom, .5 centred, 1 leaving
-  // at the top), which styles.css turns into parallax.
-  // Also, if a browser still rubber-bands past the ends, paint the gap the colour of the edge being
-  // pulled: the top section's colour near the top, the footer's black near the bottom.
-  useEffect(() => {
-    const root = document.documentElement;
-    const top = page === "home" ? "var(--teal)" : "var(--red)";
-    const sections = [...document.querySelectorAll<HTMLElement>("main > *, footer > *")];
-    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const vh = innerHeight;
-      const max = root.scrollHeight - vh;
-      root.style.backgroundColor = scrollY > max / 2 ? "#000" : top;
-      if (still) return;
-      for (const el of sections) {
-        const r = el.getBoundingClientRect();
-        if (r.bottom < -vh || r.top > vh * 2) continue; // far off screen: leave it be
-        const p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
-        el.style.setProperty("--p", p.toFixed(4));
-      }
-    };
-    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [page]);
+  // scroll-linked motion (src/scrollMotion.ts); it also colours any rubber-band gap at the page's ends
+  useEffect(() => startScrollMotion(page === "home" ? "var(--teal)" : "var(--red)"), [page]);
 
   // gentle scroll reveals: each [data-reveal] fades/lifts in once, the first time it's seen
   useEffect(() => {

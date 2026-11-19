@@ -14,7 +14,7 @@ export function Sparks({ items }: { items: readonly Spark[] }) {
         <i
           key={i}
           className={`spark spark--${shape}`}
-          style={{ left: `${x}%`, top: `${y}%`, "--z": `${z}%`, "--c": c, animationDelay: `${d}s, ${d * 1.7}s` } as CSSProperties}
+          style={{ left: `${x}%`, top: `${y}%`, "--z": `${z}%`, "--c": c, "--d": `${d}s` } as CSSProperties}
         />
       ))}
     </span>
