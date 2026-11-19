@@ -4,7 +4,7 @@
  */
 export const CONTACT = {
   /** WhatsApp number in international format, digits only — e.g. "923001234567" */
-  whatsapp: "",
+  whatsapp: "923333897320",
   /** Booking email — e.g. "bookings@flipandgrill.pk" */
   email: "",
   /** Instagram handle without the @ — e.g. "flipandgrill" */

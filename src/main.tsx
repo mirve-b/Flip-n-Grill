@@ -1,20 +1,35 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 import App from "./App";
 import "./styles.css";
-import { forcedLite, lowEnd } from "./lib/device";
 
-// weak devices get a lighter stylesheet path (static backgrounds, fewer effects)
-if (lowEnd) document.documentElement.classList.add("lite");
-if (forcedLite) document.documentElement.classList.add("lite-preview");
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+// a reload always opens at the top: drop any #section a nav click left in the address bar
+// (only the #contact page is kept) and stop the browser restoring the old scroll position
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+if (location.hash && location.hash !== "#contact") history.replaceState(null, "", location.pathname + location.search);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
   </StrictMode>,
 );
+
+/*
+ * Splash → intro. The splash stays at least ~2s (so its animation can finish), waits
+ * for the fonts and the hero burger, and never longer than 4s. Adding .is-ready
+ * plays the hero's entrance as the splash fades.
+ */
+const MIN = 2000;
+const MAX = 4000;
+const hero = new Image();
+hero.src = "/art/burger.webp";
+const ready = Promise.all([document.fonts.ready, hero.decode().catch(() => undefined)]);
+const elapsed = () => performance.now();
+Promise.race([ready, new Promise((r) => setTimeout(r, MAX))]).then(() => {
+  setTimeout(() => {
+    document.documentElement.classList.add("is-ready");
+    const splash = document.getElementById("splash");
+    splash?.classList.add("is-done");
+    setTimeout(() => splash?.remove(), 700);
+  }, Math.max(0, MIN - elapsed()));
+});

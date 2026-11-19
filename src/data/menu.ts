@@ -1,47 +1,38 @@
-export type IconId = "burger" | "double" | "curly" | "animal" | "mozzy" | "water" | "soda";
-
 export type MenuItem = {
   name: string;
   blurb?: string;
-  icon: IconId;
-  badge?: { text: string; tone?: "red" };
-  sfx?: string;
-  tone?: "alt" | "spice";
+  /** hand-drawn art in public/menu */
+  img: string;
+  /** price in rupees: shows on the receipt when set, e.g. price: 850 */
+  price?: number;
 };
 
 export const burgers: MenuItem[] = [
   {
     name: "Oklahoma Smash",
+    img: "/menu/oklahoma-smash.webp",
     blurb: "Paper-thin onions smashed straight into the patty on a screaming-hot grill. Caramelised, lacy-edged, ridiculous.",
-    icon: "burger",
-    badge: { text: "The OG" },
-    sfx: "CRUNCH!",
   },
   {
     name: "Smokehouse Smash",
+    img: "/menu/smokehouse-smash.webp",
     blurb: "Deep, smoky, saucy. A burger that walks in slow-motion with the wind in its hair.",
-    icon: "burger",
-    badge: { text: "Smoky", tone: "red" },
-    sfx: "FWOOSH!",
-    tone: "alt",
   },
 ];
 
-export const extras = ["Patty", "Cheese", "Sauce"];
-
 export const sides: MenuItem[] = [
-  { name: "Salted Curly Fries", blurb: "Classic spirals. Crispy. Salty. No notes.", icon: "curly" },
-  { name: "Masala Curly Fries", blurb: "Same spirals, Karachi spice-level unlocked.", icon: "curly", tone: "spice" },
-  { name: "Animal Fries", blurb: "Fries buried under cheese and sauce. Feral. Unhinged.", icon: "animal" },
-  { name: "Mozzy Sticks", blurb: "Golden outside, cheese-pull plot twist inside.", icon: "mozzy" },
+  { name: "Salted Curly Fries", img: "/menu/salted-curly.webp", blurb: "Classic spirals. Crispy. Salty. No notes." },
+  { name: "Masala Curly Fries", img: "/menu/masala-curly.webp", blurb: "Same spirals, Karachi spice-level unlocked." },
+  { name: "Animal Fries", img: "/menu/animal-fries.webp", blurb: "Fries buried under cheese and sauce. Feral. Unhinged." },
+  { name: "Mozzy Sticks", img: "/menu/mozzy-sticks.webp", blurb: "Golden outside, cheese-pull plot twist inside." },
 ];
 
 export const meals: MenuItem[] = [
-  { name: "Single + Fries", blurb: "One smash patty, one side of fries. The starter arc.", icon: "burger" },
-  { name: "Double + Fries", blurb: "Two smash patties plus fries. The final-boss form.", icon: "double", tone: "alt" },
+  { name: "Single + Fries", img: "/menu/single-fries.webp", blurb: "One smash patty, one side of fries. The starter arc." },
+  { name: "Double + Fries", img: "/menu/double-fries.webp", blurb: "Two smash patties plus fries. The final-boss form." },
 ];
 
 export const drinks: MenuItem[] = [
-  { name: "Mineral Water", icon: "water" },
-  { name: "Soft Drink", icon: "soda" },
+  { name: "Mineral Water", img: "/menu/water.webp" },
+  { name: "Soft Drink", img: "/menu/soft-drink.webp" },
 ];

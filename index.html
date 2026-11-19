@@ -4,15 +4,59 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Flip & Grill — Smash Burgers at IBA Karachi</title>
-    <meta name="description" content="Flip & Grill — smash burgers, curly fries and mozzy sticks. Only at IBA Karachi." />
-    <meta name="theme-color" content="#006267" />
-    <link rel="icon" href="/logo-sm.png" />
-    <link rel="preload" as="image" href="/logo-round.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet" />
+    <meta name="description" content="Flip & Grill: smash burgers, curly fries and mozzy sticks. Stall at IBA Karachi, catering all over Karachi." />
+    <meta name="theme-color" content="#4A6E6B" />
+    <link rel="icon" href="/favicon.png" />
+    <!-- self-hosted fonts (public/fonts): Londrina Solid for headings, Konkhmer Sleokchher for body text. Apple Symbols is a system font on Apple devices; others fall back to Space Mono. -->
+    <link rel="preload" href="/fonts/londrina-solid-900.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/konkhmer.woff2" as="font" type="font/woff2" crossorigin />
+    <style>
+      @font-face { font-family: "Londrina Solid"; src: url(/fonts/londrina-solid-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+      @font-face { font-family: "Londrina Solid"; src: url(/fonts/londrina-solid-900.woff2) format("woff2"); font-weight: 900; font-display: swap; }
+      @font-face { font-family: "Konkhmer Sleokchher"; src: url(/fonts/konkhmer.woff2) format("woff2"); font-display: swap; }
+      @font-face { font-family: "Black Ops One"; src: url(/fonts/black-ops-one.woff2) format("woff2"); font-display: swap; }
+      @font-face { font-family: "Space Mono"; src: url(/fonts/space-mono.woff2) format("woff2"); font-display: swap; }
+      /* splash: a smash burger stacks itself, gets smashed, then the name stamps down. src/main.tsx fades it out */
+      #splash { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #0d5a5c url(/art/paper-teal.webp) center / cover; transition: opacity .5s ease, visibility .5s; }
+      #splash.is-done { opacity: 0; visibility: hidden; }
+      .sp { display: grid; justify-items: center; gap: 26px; transition: transform .5s cubic-bezier(.6, 0, .4, 1); }
+      #splash.is-done .sp { transform: translateY(-30px) scale(.9); }
+      .sp__stack { display: grid; justify-items: center; width: 168px; transform-origin: 50% 100%; animation: sp-smash .5s cubic-bezier(.3, 1.5, .5, 1) 1.05s both; }
+      .sp__stack i { display: block; border: 3px solid #1d130e; animation: sp-drop .45s cubic-bezier(.3, 1.4, .5, 1) both; animation-delay: var(--d); }
+      .sp__top { width: 150px; height: 58px; background: #f2a541; border-radius: 80px 80px 12px 12px; margin-bottom: -3px; position: relative; z-index: 4;
+        background-image: radial-gradient(ellipse 5px 3px at 30% 40%, #fff3d6 98%, transparent), radial-gradient(ellipse 5px 3px at 55% 28%, #fff3d6 98%, transparent), radial-gradient(ellipse 5px 3px at 72% 48%, #fff3d6 98%, transparent), radial-gradient(ellipse 5px 3px at 44% 58%, #fff3d6 98%, transparent); }
+      .sp__cheese { width: 162px; height: 16px; background: #ffc21a; border-radius: 4px; margin-bottom: -3px; position: relative; z-index: 3; clip-path: polygon(0 0, 100% 0, 100% 60%, 82% 60%, 78% 100%, 72% 60%, 36% 60%, 30% 120%, 24% 60%, 0 60%); border-bottom: 0 !important; }
+      .sp__patty { width: 168px; height: 30px; background: #5a2f1c; border-radius: 16px; margin-bottom: -3px; position: relative; z-index: 2; }
+      .sp__bottom { width: 150px; height: 30px; background: #f2a541; border-radius: 8px 8px 22px 22px; position: relative; z-index: 1; }
+      .sp__shadow { width: 190px; height: 14px; margin-top: 8px; border-radius: 50%; background: rgba(0, 0, 0, .25); animation: sp-shadow .5s ease 1.05s both; }
+      .sp__word { font: 900 clamp(44px, 9vw, 76px)/1 "Londrina Solid", system-ui, sans-serif; color: #f1d7b3; letter-spacing: .01em; text-transform: uppercase; animation: sp-stamp .45s cubic-bezier(.5, 0, .6, 1.5) 1.25s both; }
+      .sp__word b { color: #ff9400; font-weight: 400; }
+      .sp__sub { font: 15px/1 "Apple Symbols", "Space Mono", ui-monospace, monospace; color: #f1d7b3; letter-spacing: .14em; text-transform: uppercase; margin-top: -14px; animation: sp-fade .4s ease .3s both; }
+      .sp__sub span { animation: sp-blink 1s steps(1) infinite; }
+      @keyframes sp-drop { from { opacity: 0; transform: translateY(-140px) rotate(-6deg); } }
+      @keyframes sp-smash { 0% { transform: none; } 35% { transform: scale(1.22, .62); } 70% { transform: scale(.96, 1.06); } 100% { transform: scale(1.06, .9); } }
+      @keyframes sp-shadow { 35% { transform: scaleX(1.25); } 100% { transform: scaleX(1.08); } }
+      @keyframes sp-stamp { from { opacity: 0; transform: scale(2.4) rotate(-6deg); } 70% { opacity: 1; transform: scale(.95) rotate(-2deg); } to { opacity: 1; transform: rotate(-2deg); } }
+      @keyframes sp-fade { from { opacity: 0; } }
+      @keyframes sp-blink { 50% { opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { #splash { display: none; } }
+    </style>
+    <noscript><style>#splash { display: none; }</style></noscript>
   </head>
   <body>
+    <div id="splash" aria-hidden="true">
+      <div class="sp">
+        <div class="sp__stack">
+          <i class="sp__top" style="--d:.55s"></i>
+          <i class="sp__cheese" style="--d:.42s"></i>
+          <i class="sp__patty" style="--d:.28s"></i>
+          <i class="sp__bottom" style="--d:.12s"></i>
+        </div>
+        <span class="sp__shadow"></span>
+        <p class="sp__word">Flip <b>&amp;</b> Grill</p>
+        <p class="sp__sub">Firing up the grill<span>_</span></p>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -1,74 +1,81 @@
-import { useRef } from "react";
-import { burgers, drinks, extras, meals, sides, type MenuItem } from "../data/menu";
-import { Icon } from "./Icons";
-import { SplitTitle } from "./SplitTitle";
-import { Edge } from "./Edge";
+import { useState } from "react";
+import { burgers, drinks, meals, sides, type MenuItem } from "../data/menu";
+import { Dots } from "./Dots";
 
-function Panel({ item, variant }: { item: MenuItem; variant?: "hero" | "meal" | "drink" }) {
-  const cls = ["panel", "reveal", variant && `panel--${variant}`, item.tone && `panel--${item.tone}`].filter(Boolean).join(" ");
-  const body = (
-    <>
-      <h4>{item.name}</h4>
-      {item.blurb && <p>{item.blurb}</p>}
-    </>
-  );
-  return (
-    <article className={cls}>
-      {item.badge && <span className={`badge ${item.badge.tone === "red" ? "badge--red" : ""}`}>{item.badge.text}</span>}
-      <Icon id={item.icon} className="panel__art" />
-      {variant === "meal" ? <div>{body}</div> : body}
-      {item.sfx && <span className="sfx-mini">{item.sfx}</span>}
-    </article>
-  );
-}
+/**
+ * 03 / The takeout: the whole menu printed as a till receipt. Hovering (or
+ * focusing) a line shows that item's art big on the left, like it just landed
+ * on the counter.
+ */
+const SECTIONS = [
+  { title: "Burgers", items: burgers },
+  { title: "Sides", items: sides },
+  { title: "Make it a meal", items: meals },
+  { title: "Drinks", items: drinks },
+];
+const COUNT = SECTIONS.reduce((n, s) => n + s.items.length, 0);
 
 export function Menu() {
-  const dialog = useRef<HTMLDialogElement>(null);
+  const [active, setActive] = useState<MenuItem>(burgers[0]);
 
   return (
-    <section className="menu-wrap" id="menu">
-      <Edge color="var(--orange)" />
-      <div className="section menu">
-      <header className="section__head">
-        <p className="caption-box reveal">Chapter 03</p>
-        <SplitTitle text="The Menu" />
-      </header>
+    <section className="menu" id="menu" aria-labelledby="menu-title">
+      <div className="wrap menu__layout">
+        <div className="menu__intro" data-reveal>
+          <p className="label">03 / The takeout</p>
+          <h2 className="menu__title" id="menu-title">Menu</h2>
+          <p className="menu__sub">Enough talking!! Here's the good stuff.</p>
 
-      <h3 className="cat reveal">Burgers</h3>
-      <div className="grid grid--2">
-        {burgers.map((b) => <Panel key={b.name} item={b} variant="hero" />)}
-      </div>
+          <div className="menu__counter" aria-hidden="true">
+            <Dots cols={4} rows={3} className="menu__dots" />
+            <img className="menu__pick" key={active.name} src={active.img} alt="" />
+            <p className="menu__pickname">{active.name}</p>
+            {active.blurb && <p className="menu__pickblurb">{active.blurb}</p>}
+          </div>
+        </div>
 
-      <div className="extras reveal">
-        <span className="extras__label">Power-ups</span>
-        {extras.map((x) => <span className="chip" key={x}>+ {x}</span>)}
-      </div>
+        <div className="receipt-wrap" data-reveal>
+          <div className="receipt">
+            <header className="receipt__head">
+              <p className="receipt__brand">Flip &amp; Grill</p>
+              <p>Smash burgers · IBA Karachi</p>
+              <p className="receipt__row"><span>Order #0001</span><span>Cashier: Omar</span></p>
+            </header>
 
-      <h3 className="cat reveal">Sides</h3>
-      <div className="grid grid--4">
-        {sides.map((s) => <Panel key={s.name} item={s} />)}
-      </div>
+            {SECTIONS.map((s) => (
+              <div className="receipt__group" key={s.title}>
+                <h3>** {s.title} **</h3>
+                <ul>
+                  {s.items.map((it) => (
+                    <li key={it.name}>
+                      <button
+                        className={`receipt__item ${active === it ? "is-on" : ""}`}
+                        onMouseEnter={() => setActive(it)}
+                        onFocus={() => setActive(it)}
+                        onClick={() => setActive(it)}
+                      >
+                        <span className="receipt__qty">1x</span>
+                        <span className="receipt__name">
+                          {it.name}
+                          {it.blurb && <small>{it.blurb}</small>}
+                        </span>
+                        {it.price != null && <span className="receipt__price">Rs {it.price}</span>}
+                        <img src={it.img} alt="" loading="lazy" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
 
-      <h3 className="cat reveal">Make it a Meal</h3>
-      <div className="grid grid--2">
-        {meals.map((m) => <Panel key={m.name} item={m} variant="meal" />)}
-      </div>
-
-      <h3 className="cat reveal">Drinks</h3>
-      <div className="grid grid--2 grid--drinks">
-        {drinks.map((d) => <Panel key={d.name} item={d} variant="drink" />)}
-      </div>
-
-      <div className="menu__board reveal">
-        <button className="btn btn--ghost" onClick={() => dialog.current?.showModal()}>
-          View the original menu board
-        </button>
-      </div>
-
-      <dialog className="lightbox" ref={dialog} onClick={(e) => e.target === dialog.current && dialog.current?.close()}>
-        <button className="lightbox__close" aria-label="Close" onClick={() => dialog.current?.close()}>✕</button>
-        <img src="/menu-board.webp" loading="lazy" decoding="async" alt="Flip & Grill menu board: burgers, extras, sides, meals and drinks" />
-      </dialog>
+            <footer className="receipt__foot">
+              <p className="receipt__row"><span>Items</span><span>{COUNT}</span></p>
+              <p className="receipt__row receipt__total"><span>Total</span><span>1 happy tummy</span></p>
+              <span className="receipt__barcode" />
+              <p>Thank you! Come hungry again.</p>
+            </footer>
+          </div>
+        </div>
       </div>
     </section>
   );

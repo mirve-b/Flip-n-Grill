@@ -1,17 +1,13 @@
-import { useRef, useState, type FormEvent } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { useState, type FormEvent } from "react";
 import { CONTACT, EVENT_TYPES, KARACHI_AREAS } from "../data/contact";
-import { SplitTitle } from "./SplitTitle";
-import { Edge } from "./Edge";
-import { burst } from "../lib/burst";
 
+/** The contact page (#contact): three steps, then the booking form (sends via WhatsApp, email or Instagram). */
 type Status = { kind: "idle" } | { kind: "sent"; via: "whatsapp" | "email" | "instagram" | "copied" } | { kind: "error"; msg: string };
 
 const STEPS = [
-  { n: 1, title: "Tell us", text: "Fill the form: date, area, headcount, vibe." },
-  { n: 2, title: "We plan it", text: "We confirm the menu and send you a quote." },
-  { n: 3, title: "We smash on site", text: "We roll up with the grill and feed the crowd." },
+  { n: "01", title: "Tell us", text: "Fill the form: date, area, headcount, vibe." },
+  { n: "02", title: "We plan it", text: "We confirm the menu and send you a quote." },
+  { n: "03", title: "We smash on site", text: "We roll up with the grill and feed the crowd." },
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -33,36 +29,17 @@ function buildMessage(f: FormData) {
   return lines.join("\n");
 }
 
-export function Catering() {
-  const ref = useRef<HTMLElement>(null);
-  const [type, setType] = useState<string>("bazaar");
-  const [status, setStatus] = useState<Status>({ kind: "idle" });
+const sendLabel = CONTACT.whatsapp ? "Send on WhatsApp" : CONTACT.email ? "Send by email" : CONTACT.instagram ? "Send via Instagram DM" : "Send booking";
 
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from(".cater__stamp", {
-          scale: 3,
-          rotation: 40,
-          opacity: 0,
-          duration: 0.5,
-          ease: "power4.in",
-          scrollTrigger: { trigger: ".cater__stamp", start: "top 85%" },
-        });
-      });
-    },
-    { scope: ref },
-  );
+export function Catering() {
+  const [type, setType] = useState<string>(EVENT_TYPES[0].id);
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     if (!form.reportValidity()) return;
     const msg = buildMessage(new FormData(form));
-    const btn = form.querySelector<HTMLButtonElement>("button[type=submit]");
-    const r = btn?.getBoundingClientRect();
-    if (r) burst(r.left + r.width / 2, r.top, "BOOKED!");
 
     if (CONTACT.whatsapp) {
       window.open(`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
@@ -86,44 +63,33 @@ export function Catering() {
     }
   };
 
-  const type_ = EVENT_TYPES.find((t) => t.id === type);
-
   return (
-    <section className="cater" id="catering" ref={ref}>
-      <Edge color="var(--teal)" />
-      <div className="section">
-        <header className="section__head">
-          <p className="caption-box reveal">Chapter 05: Catering</p>
-          <SplitTitle text="We Bring the Grill" />
-          <p className="cater__lede reveal">
-            Bazaars, weddings, office days, campus events, birthdays. Wherever the crowd is,
-            we'll be smashing burgers on site.
-          </p>
-          <div className="cater__stamp" aria-label="Karachi only">
-            <span>Karachi</span>
-            <b>ONLY</b>
-          </div>
-        </header>
+    <section className="cater" id="contact-page" aria-labelledby="cater-title">
+      <div className="wrap">
+        <a className="cater__back" href="#top">← Back to the burgers</a>
+        <p className="label label--center">Contact / Catering</p>
+        <h2 data-reveal className="cater__title" id="cater-title">We Bring The Grill!</h2>
+        <p className="cater__sub" data-reveal>
+          Bazaars, weddings, office days, campus events, birthdays. Wherever the crowd is, we'll be smashing burgers on
+          site. Karachi only.
+        </p>
 
         <ol className="cater__steps">
           {STEPS.map((s) => (
-            <li className="cater__step reveal" key={s.n}>
-              <span className="cater__num">{s.n}</span>
-              <h4>{s.title}</h4>
+            <li key={s.n} data-reveal style={{ transitionDelay: `${Number(s.n) * 80}ms` }}>
+              <span>{s.n}</span>
+              <h3>{s.title}</h3>
               <p>{s.text}</p>
             </li>
           ))}
         </ol>
 
-        <div className="cater__card reveal">
-          <div className="cater__formhead">
-            <h3>Book us for your event</h3>
-            <p className="cater__sfx" key={type} aria-hidden="true">{type_?.sfx}</p>
-          </div>
+        <div className="cater__card" data-reveal>
+          <h3 className="cater__formtitle">Book us for your event</h3>
 
           {status.kind === "sent" ? (
             <div className="cater__done" role="status">
-              <p className="cater__done-big">BOOKED… almost!</p>
+              <p className="cater__donebig">Almost booked!</p>
               {status.via === "whatsapp" && <p>WhatsApp just opened with your details filled in. Hit <b>send</b> and we'll get back to you.</p>}
               {status.via === "email" && <p>Your email app just opened with your details. Hit <b>send</b> and we'll get back to you.</p>}
               {status.via === "instagram" && (
@@ -133,21 +99,21 @@ export function Catering() {
                 </p>
               )}
               {status.via === "copied" && <p>Your booking details are copied. Paste them to us on WhatsApp or Instagram.</p>}
-              <button className="btn btn--ghost" onClick={() => setStatus({ kind: "idle" })}>Book another event</button>
+              <button className="btn btn--cream" onClick={() => setStatus({ kind: "idle" })}>Book another event</button>
             </div>
           ) : (
-            <form className="cater__form" onSubmit={onSubmit}>
-              <fieldset className="cater__types">
+            <form className="form" onSubmit={onSubmit}>
+              <fieldset className="form__types">
                 <legend>What's the occasion?</legend>
                 {EVENT_TYPES.map((t) => (
-                  <label key={t.id} className={`chip chip--radio ${type === t.id ? "is-on" : ""}`}>
+                  <label key={t.id} className={`chip ${type === t.id ? "is-on" : ""}`}>
                     <input type="radio" name="type" value={t.id} checked={type === t.id} onChange={() => setType(t.id)} />
                     {t.label}
                   </label>
                 ))}
               </fieldset>
 
-              <div className="cater__grid">
+              <div className="form__grid">
                 <label className="field">
                   <span>Your name</span>
                   <input name="name" required autoComplete="name" placeholder="Ayesha Khan" />
@@ -188,40 +154,16 @@ export function Catering() {
                 </label>
               </div>
 
-              {status.kind === "error" && <p className="cater__error" role="alert">{status.msg}</p>}
+              {status.kind === "error" && <p className="form__error" role="alert">{status.msg}</p>}
 
-              <div className="cater__submit">
-                <button type="submit" className="btn btn--big">
-                  {CONTACT.whatsapp ? "Send on WhatsApp" : CONTACT.email ? "Send by email" : CONTACT.instagram ? "Send via Instagram DM" : "Send booking"} →
-                </button>
-                <p className="cater__note">We cater anywhere in Karachi. Outside Karachi? Sorry, not yet!</p>
+              <div className="form__submit">
+                <button type="submit" className="btn">{sendLabel} →</button>
+                <p>We cater anywhere in Karachi. Outside Karachi? Sorry, not yet!</p>
               </div>
             </form>
           )}
         </div>
-
-        <ContactStrip />
       </div>
     </section>
-  );
-}
-
-export function ContactStrip({ compact = false }: { compact?: boolean }) {
-  const items = [
-    CONTACT.whatsapp && { href: `https://wa.me/${CONTACT.whatsapp}`, label: "WhatsApp", value: `+${CONTACT.whatsapp}` },
-    CONTACT.instagram && { href: `https://instagram.com/${CONTACT.instagram}`, label: "Instagram", value: `@${CONTACT.instagram}` },
-    CONTACT.email && { href: `mailto:${CONTACT.email}`, label: "Email", value: CONTACT.email },
-  ].filter(Boolean) as { href: string; label: string; value: string }[];
-  if (!items.length) return null;
-  return (
-    <ul className={`contacts ${compact ? "contacts--compact" : ""}`}>
-      {items.map((c) => (
-        <li key={c.label}>
-          <a href={c.href} target="_blank" rel="noopener">
-            <b>{c.label}</b> {c.value}
-          </a>
-        </li>
-      ))}
-    </ul>
   );
 }

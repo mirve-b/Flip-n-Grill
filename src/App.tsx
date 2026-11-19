@@ -1,129 +1,124 @@
-import { useEffect, useRef } from "react";
-import Lenis from "lenis";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
-import { IconSprite } from "./components/Icons";
-import { Loader } from "./components/Loader";
-import { Cursor } from "./components/Cursor";
+import { useEffect, useState } from "react";
+import { Nav } from "./components/Nav";
 import { Hero } from "./components/Hero";
-import { Ticker } from "./components/Ticker";
+import { Strip } from "./components/Strip";
 import { Story } from "./components/Story";
-import { BuildSection } from "./components/BuildSection";
-import { BigMarquee } from "./components/BigMarquee";
+import { Investigation } from "./components/Investigation";
 import { Menu } from "./components/Menu";
-import { FindUs, Footer, Nav } from "./components/FindUs";
-import { Paths } from "./components/Paths";
+import { Stall } from "./components/Stall";
 import { Catering } from "./components/Catering";
-import { burst } from "./lib/burst";
+import { Footer } from "./components/Footer";
+
+/** Two pages: the home page, and the booking page at #contact. */
+type Page = "home" | "contact";
+const pageFromHash = (): Page => (location.hash === "#contact" ? "contact" : "home");
 
 export default function App() {
-  const main = useRef<HTMLElement>(null);
+  const [page, setPage] = useState<Page>(pageFromHash);
 
-  // Lenis smooth scroll, driven by GSAP's ticker so ScrollTrigger stays in sync
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ anchors: { offset: -70 } });
-    lenis.on("scroll", ScrollTrigger.update);
-    const raf = (t: number) => lenis.raf(t * 1000);
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0);
+    const onHash = () => setPage(pageFromHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  // after switching pages, land at the top (or at the section the link pointed to, e.g. #menu)
+  useEffect(() => {
+    const target = page === "home" && location.hash.length > 1 ? document.getElementById(location.hash.slice(1)) : null;
+    if (!target) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+      return;
+    }
+    const jump = () => target.scrollIntoView({ behavior: "instant" });
+    jump();
+    // images above the section are still loading and push it down, so jump again once they're in
+    const pending = [...document.images].filter((img) => !img.complete && img.getBoundingClientRect().top < target.getBoundingClientRect().top);
+    let cancelled = false;
+    const userScrolled = () => (cancelled = true);
+    window.addEventListener("wheel", userScrolled, { once: true, passive: true });
+    window.addEventListener("touchstart", userScrolled, { once: true, passive: true });
+    Promise.race([
+      Promise.all(pending.map((img) => new Promise((r) => { img.addEventListener("load", r, { once: true }); img.addEventListener("error", r, { once: true }); }))),
+      new Promise((r) => setTimeout(r, 2500)),
+    ]).then(() => !cancelled && jump());
     return () => {
-      gsap.ticker.remove(raf);
-      lenis.destroy();
+      cancelled = true;
+      window.removeEventListener("wheel", userScrolled);
+      window.removeEventListener("touchstart", userScrolled);
     };
-  }, []);
+  }, [page]);
 
-  // Click anywhere → comic SFX
+  // scroll-linked motion: every section gets --p (0 entering at the bottom, .5 centred, 1 leaving
+  // at the top), which styles.css turns into parallax.
+  // Also, if a browser still rubber-bands past the ends, paint the gap the colour of the edge being
+  // pulled: the top section's colour near the top, the footer's black near the bottom.
   useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      const t = e.target as HTMLElement;
-      if (t.closest("a, button, dialog, canvas")) return;
-      burst(e.clientX, e.clientY);
+    const root = document.documentElement;
+    const top = page === "home" ? "var(--teal)" : "var(--red)";
+    const sections = [...document.querySelectorAll<HTMLElement>("main > *, footer > *")];
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const vh = innerHeight;
+      const max = root.scrollHeight - vh;
+      root.style.backgroundColor = scrollY > max / 2 ? "#000" : top;
+      if (still) return;
+      for (const el of sections) {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -vh || r.top > vh * 2) continue; // far off screen: leave it be
+        const p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
+        el.style.setProperty("--p", p.toFixed(4));
+      }
     };
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
-  }, []);
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [page]);
 
-  // Page-wide reveals + gentle mouse-tilt on menu panels
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.set(".reveal", { opacity: 0 });
-        ScrollTrigger.batch(".reveal", {
-          start: "top 88%",
-          once: true,
-          onEnter: (els) =>
-            gsap.fromTo(
-              els,
-              { opacity: 0, y: 48, scale: 0.97 },
-              { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "power3.out", stagger: 0.08, clearProps: "transform" },
-            ),
-        });
-
-        gsap.utils.toArray<HTMLElement>(".split").forEach((title) => {
-          gsap.from(title.querySelectorAll(".char"), {
-            yPercent: 110,
-            rotation: () => gsap.utils.random(-8, 8),
-            opacity: 0,
-            duration: 0.75,
-            ease: "back.out(1.6)",
-            stagger: 0.03,
-            scrollTrigger: { trigger: title, start: "top 85%" },
-          });
-        });
-      });
-
-      // 3D tilt toward the pointer on cards (desktop only)
-      mm.add("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)", () => {
-        const cards = gsap.utils.toArray<HTMLElement>(".panel");
-        gsap.set(cards, { transformPerspective: 800 });
-        const handlers = cards.map((card) => {
-          const rx = gsap.quickTo(card, "rotationX", { duration: 0.4, ease: "power3.out" });
-          const ry = gsap.quickTo(card, "rotationY", { duration: 0.4, ease: "power3.out" });
-          const move = (e: PointerEvent) => {
-            const r = card.getBoundingClientRect();
-            ry(((e.clientX - r.left) / r.width - 0.5) * 7);
-            rx(-((e.clientY - r.top) / r.height - 0.5) * 7);
-          };
-          const leave = () => {
-            rx(0);
-            ry(0);
-          };
-          card.addEventListener("pointermove", move);
-          card.addEventListener("pointerleave", leave);
-          return () => {
-            card.removeEventListener("pointermove", move);
-            card.removeEventListener("pointerleave", leave);
-          };
-        });
-        return () => handlers.forEach((h) => h());
-      });
-
-    },
-    { scope: main },
-  );
+  // gentle scroll reveals: each [data-reveal] fades/lifts in once, the first time it's seen
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    document.documentElement.classList.add("can-reveal");
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          e.target.classList.add("is-in");
+          io.unobserve(e.target);
+        }),
+      { rootMargin: "0px 0px -12% 0px" },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [page]);
 
   return (
     <>
-      <IconSprite />
-      <Loader />
-      <Cursor />
-      <Nav />
-      <main ref={main}>
-        <Hero />
-        <Ticker />
-        <Paths />
-        <Story />
-        <BuildSection />
-        <BigMarquee top="SMASHED ★ FLIPPED ★ DEVOURED" bottom="スマッシュ ★ CRISPY EDGES ★ MELTY CHEESE" />
-        <Menu />
-        <FindUs />
-        <Catering />
-      </main>
-      <Footer />
+      <Nav key={page} />
+      {page === "contact" ? (
+        <main>
+          <Catering />
+        </main>
+      ) : (
+        <main>
+          <Hero />
+          <Strip />
+          <Story />
+          <Investigation />
+          <Menu />
+          <Strip />
+          <Stall />
+        </main>
+      )}
+      <Footer cta={page === "home"} />
     </>
   );
 }
