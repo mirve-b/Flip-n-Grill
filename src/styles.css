@@ -17,8 +17,8 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
-html { scroll-behavior: smooth; scroll-padding-top: 16px; overscroll-behavior: none; background: var(--teal); }
-body { overscroll-behavior: none; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; overscroll-behavior-y: none; background: var(--teal); }
+body { overscroll-behavior-y: none; }  /* up/down only, so the back/forward swipe still works */
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
   font-family: var(--f-sans); font-size: 16px; line-height: 1.5; color: var(--ink);
