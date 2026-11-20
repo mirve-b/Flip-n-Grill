@@ -65,7 +65,7 @@ export default function App() {
           e.target.classList.add("is-in");
           io.unobserve(e.target);
         }),
-      { rootMargin: "0px 0px -12% 0px" },
+      { rootMargin: "0px 0px 8% 0px" }, // start just before a block reaches the screen
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();

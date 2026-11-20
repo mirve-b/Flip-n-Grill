@@ -25,12 +25,12 @@ createRoot(document.getElementById("root")!).render(
 );
 
 /*
- * Splash → intro. The splash waits for the fonts and the hero burger, but only
- * briefly: at least 200ms, and never longer than 1.5s. Adding .is-ready plays
+ * Splash → intro. The splash stays at least 2s (so its animation can finish), waits
+ * for the fonts and the hero burger, and never longer than 4s. Adding .is-ready plays
  * the hero's entrance as the splash fades.
  */
-const MIN = 200;
-const MAX = 1500;
+const MIN = 2000;
+const MAX = 4000;
 const hero = new Image();
 hero.src = "/art/burger.webp";
 const ready = Promise.all([document.fonts.ready, hero.decode().catch(() => undefined)]);
