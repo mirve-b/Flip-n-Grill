@@ -8,7 +8,7 @@ import { Menu } from "./components/Menu";
 import { Stall } from "./components/Stall";
 import { Catering } from "./components/Catering";
 import { Footer } from "./components/Footer";
-import { startScrollMotion } from "./scrollMotion";
+import { watchSections } from "./sectionWatch";
 
 /** Two pages: the home page, and the booking page at #contact. */
 type Page = "home" | "contact";
@@ -49,8 +49,9 @@ export default function App() {
     };
   }, [page]);
 
-  // scroll-linked motion (src/scrollMotion.ts); it also colours any rubber-band gap at the page's ends
-  useEffect(() => startScrollMotion(page === "home" ? "var(--teal)" : "var(--red)"), [page]);
+  // pauses off-screen loops and colours any rubber-band gap at the page's ends (src/sectionWatch.ts);
+  // the scroll animations themselves are pure CSS ("motion" in styles.css)
+  useEffect(() => watchSections(page === "home" ? "var(--teal)" : "var(--red)"), [page]);
 
   // gentle scroll reveals: each [data-reveal] fades/lifts in once, the first time it's seen
   useEffect(() => {

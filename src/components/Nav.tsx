@@ -16,11 +16,16 @@ export function Nav() {
   const [open, setOpen] = useState(false);
   const [solid, setSolid] = useState(false);
 
+  // the bar turns solid once you're 40px down. An invisible 40px marker at the top of the page tells us
+  // (IntersectionObserver), so nothing runs while you scroll and React only re-renders when it flips.
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const marker = document.createElement("div");
+    marker.setAttribute("aria-hidden", "true");
+    marker.style.cssText = "position:absolute;top:0;left:0;width:1px;height:40px;pointer-events:none;visibility:hidden";
+    document.body.prepend(marker);
+    const io = new IntersectionObserver(([e]) => setSolid(!e.isIntersecting));
+    io.observe(marker);
+    return () => { io.disconnect(); marker.remove(); };
   }, []);
 
   return (

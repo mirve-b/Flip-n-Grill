@@ -28,7 +28,7 @@ export function Menu() {
 
           <div className="menu__counter" aria-hidden="true">
             <Dots cols={4} rows={3} className="menu__dots" />
-            <img className="menu__pick" key={active.name} src={active.img} alt="" />
+            <img decoding="async" className="menu__pick" key={active.name} src={active.img} alt="" />
             <p className="menu__pickname">{active.name}</p>
             {active.blurb && <p className="menu__pickblurb">{active.blurb}</p>}
           </div>
@@ -60,7 +60,7 @@ export function Menu() {
                           {it.blurb && <small>{it.blurb}</small>}
                         </span>
                         {it.price != null && <span className="receipt__price">Rs {it.price}</span>}
-                        <img src={it.img} alt="" loading="lazy" />
+                        <img decoding="async" src={it.img} alt="" loading="lazy" />
                       </button>
                     </li>
                   ))}

@@ -70,20 +70,20 @@ export function Hero() {
       if (!frame) frame = requestAnimationFrame(update);
     };
     const leave = () => {
-      if (px === -1e4) return; // nothing to reset (always the case while scrolling on touch screens)
+      if (px === -1e4) return; // nothing to reset
       px = py = -1e4;
       if (!frame) frame = requestAnimationFrame(update);
     };
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerdown", move);
     el.addEventListener("pointerleave", leave);
-    window.addEventListener("scroll", leave, { passive: true });
+    el.addEventListener("pointercancel", leave); // a touch that turns into a scroll
     return () => {
       cancelAnimationFrame(frame);
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerdown", move);
       el.removeEventListener("pointerleave", leave);
-      window.removeEventListener("scroll", leave);
+      el.removeEventListener("pointercancel", leave);
     };
   }, []);
 
@@ -100,14 +100,14 @@ export function Hero() {
     <header className="hero" id="top">
       <div className="hero__stage" ref={stage}>
 
-        <img className="h h--burst-a" src="/art/starburst.webp" alt="" />
-        <img className="h h--burst-b" src="/art/starburst.webp" alt="" />
-        <img className="h h--paper h--lift" src="/art/iba-paper.webp" alt="" />
-        <img className="h h--plate h--lift" src="/art/menu-plate.webp" alt="" />
-        <img className="h h--two h--lift" src="/art/two-omars.webp" alt="" />
-        <img className="h h--card h--lift" src="/art/smash-card.webp" alt="" />
-        <img className="h h--note h--lift" src="/art/sticky-note.webp" alt="" />
-        <img className="h h--mozzy h--lift" src="/art/mozzy.webp" alt="" />
+        <img decoding="async" className="h h--burst-a" src="/art/starburst.webp" alt="" />
+        <img decoding="async" className="h h--burst-b" src="/art/starburst.webp" alt="" />
+        <img decoding="async" className="h h--paper h--lift" src="/art/iba-paper.webp" alt="" />
+        <img decoding="async" className="h h--plate h--lift" src="/art/menu-plate.webp" alt="" />
+        <img decoding="async" className="h h--two h--lift" src="/art/two-omars.webp" alt="" />
+        <img decoding="async" className="h h--card h--lift" src="/art/smash-card.webp" alt="" />
+        <img decoding="async" className="h h--note h--lift" src="/art/sticky-note.webp" alt="" />
+        <img decoding="async" className="h h--mozzy h--lift" src="/art/mozzy.webp" alt="" />
 
         <h1 className="hero__title">
           <span className="hero__flip">
@@ -115,13 +115,13 @@ export function Hero() {
           </span>
           <span className="hero__grill">GRILL</span>
         </h1>
-        <img className="h h--smiley" src="/art/smiley.webp" alt="" />
+        <img decoding="async" className="h h--smiley" src="/art/smiley.webp" alt="" />
 
         <p className="hero__label hero__label--teal">Stall at IBA Karachi</p>
         <p className="hero__label hero__label--orange">Catering all over karachi</p>
 
         <button className="h h--burger" ref={burger} onClick={smack} onAnimationEnd={(e) => e.target === e.currentTarget && burger.current?.classList.remove("is-smacked")} aria-label="Smack the burger">
-          <img src="/art/burger.webp" alt="" />
+          <img decoding="async" src="/art/burger.webp" alt="" />
           <Sparks items={SPARKS} />
         </button>
 
@@ -130,7 +130,7 @@ export function Hero() {
             <div className="boy__dodge">
               <div className="boy__float">
                 <span className="boy__say" aria-hidden="true">{b.say}</span>
-                <img src={`/mascots/omar-${b.who}.webp`} alt="" draggable={false} />
+                <img decoding="async" src={`/mascots/omar-${b.who}.webp`} alt="" draggable={false} />
               </div>
             </div>
             <span className="hero__tag">{b.tag}</span>

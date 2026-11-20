@@ -19,9 +19,9 @@ export function Story() {
             <Dots cols={4} rows={3} className="story__dots story__dots--a" />
             <Dots cols={4} rows={4} className="story__dots story__dots--b" />
             <Dots cols={2} rows={4} className="story__dots story__dots--c" />
-            <img className="story__file" src="/art/case-file.webp" alt="Case file: The case of the sad burger. Thick, lifeless patties. Two guys, both named Omar. One spatula, one grill, one very hard smash. Case closed." loading="lazy" />
+            <img decoding="async" className="story__file" src="/art/case-file.webp" alt="Case file: The case of the sad burger. Thick, lifeless patties. Two guys, both named Omar. One spatula, one grill, one very hard smash. Case closed." loading="lazy" />
             <span className="story__tape" aria-hidden="true" />
-            <img className="story__folder" src="/art/case-folder.webp" alt="" loading="lazy" />
+            <img decoding="async" className="story__folder" src="/art/case-folder.webp" alt="" loading="lazy" />
             <span className="story__stamp" aria-hidden="true">Confidential!</span>
           </div>
         </div>
