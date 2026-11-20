@@ -9,16 +9,14 @@ import { Sparks, type Spark } from "./Sparks";
  */
 // sparkles around the burger: [left %, top %, size %, colour, delay s, shape], all relative to the burger
 const SPARKS: readonly Spark[] = [
-  [-9, 9, 24, "#fff4dc", 0, "star"],
-  [97, -1, 25, "#fff4dc", 0.6, "star"],
-  [102, 77, 19, "#ff9400", 0.3, "star"],
-  [-1, 89, 15, "#ff9400", 0.9, "plus"],
-  [30, -16, 13, "#fff4dc", 1.2, "plus"],
-  [109, 37, 13, "#ff9400", 1.8, "plus"],
-  [79, 104, 14, "#fff4dc", 1.4, "star"],
-  [-15, 52, 15, "#ff9400", 2.1, "star"],
-  [63, -18, 10, "#fff4dc", 2.5, "star"],
-  [19, 108, 10, "#fff4dc", 0.5, "star"],
+  [-7, 12, 12, "#fff4dc", 0, "star"],
+  [30, -14, 8, "#ff9400", 1.2, "plus"],
+  [95, 2, 13, "#fff4dc", 0.6, "star"],
+  [106, 34, 7.5, "#ffd23f", 1.8, "plus"],
+  [100, 74, 10, "#fff4dc", 0.3, "star"],
+  [78, 100, 8, "#ff9400", 1.4, "star"],
+  [2, 86, 9, "#ffd23f", 0.9, "plus"],
+  [-12, 54, 9, "#fff4dc", 2.1, "star"],
 ] as const;
 
 /* phones and tablets held upright hide the desktop collage (same query as styles.css); sideways they get the desktop layout */
@@ -135,8 +133,11 @@ export function Hero() {
 
         <button className="h h--burger" ref={burger} onClick={smack} onAnimationEnd={(e) => e.target === e.currentTarget && burger.current?.classList.remove("is-smacked")} aria-label="Smack the burger">
           <img decoding="async" fetchPriority="high" width={1126} height={959} src="/art/burger.webp" alt="" />
-          <Sparks items={narrow ? SPARKS.slice(0, 6) : SPARKS} />
         </button>
+        {/* the sparkles sit on their own layer over the burger's spot, above the title, labels and buttons, so nothing hides them */}
+        <div className="h h--sparks" aria-hidden="true">
+          <Sparks items={narrow ? SPARKS.slice(0, 6) : SPARKS} />
+        </div>
 
         {!narrow && BOYS.map((b) => (
           <div className={`boy ${b.cls}`} key={b.who}>

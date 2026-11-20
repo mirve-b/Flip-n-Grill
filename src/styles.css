@@ -94,6 +94,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .h--burst-a           { z-index: 1; left: 48%; top: 12%; width: calc(31 * var(--u)); }
 .h--burst-b           { z-index: 1; left: 31%; top: 58%; width: calc(28 * var(--u)); rotate: 165deg; }
 .h--burger            { z-index: 3; left: 33.3%; top: 31.9%; width: calc(33.3 * var(--u)); }
+.h--sparks            { z-index: 7; left: 33.3%; top: 31.9%; width: calc(33.3 * var(--u)); }   /* sparkles: same spot as the burger, drawn above everything but the Omars */
 .boy--1               { left: 21.6%; top: 24.6%; width: calc(13.2 * var(--u)); }    /* Omar 1 */
 .boy--2               { left: 67.8%; top: 38.6%; width: calc(12.7 * var(--u)); }    /* Omar 2 */
 .boy--1 .hero__tag    { left: 28%; top: 104%; rotate: -8deg; }      /* "I flip", relative to Omar 1 */
@@ -124,6 +125,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .hero__label          { font-size: calc(5.3 * var(--u)); }
   .no-apple-mono .hero__label { font-size: calc(5.3 * .84 * var(--u)); }
   .h--burger            { left: calc(50% - 36 * var(--u)); top: calc(44px + 47% - calc(8.7 * var(--u))); width: calc(72 * var(--u)); }
+  .h--sparks            { left: calc(50% - 36 * var(--u)); top: calc(44px + 47% - calc(8.7 * var(--u))); width: calc(72 * var(--u)); }
   .h--burst-a           { left: 50%; top: calc(44px + 47% - calc(19.5 * var(--u))); width: calc(54 * var(--u)); rotate: 10deg; }
   .h--burst-b           { left: calc(50% - 52 * var(--u)); top: calc(44px + 47% + calc(22 * var(--u))); width: calc(58 * var(--u)); rotate: 165deg; }
   .hero__ctas           { left: 53%; top: auto; bottom: 6%; translate: -50% 0; gap: calc(3 * var(--u)); }
@@ -138,6 +140,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .h--burger { padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 85%; -webkit-tap-highlight-color: transparent; }
 .h--burger img { width: 100%; }
+.h--sparks { aspect-ratio: 1126 / 959; pointer-events: none; }  /* the burger image's shape */
 .h--burger.is-smacked { animation: smack .75s cubic-bezier(.3, .6, .4, 1); }
 @keyframes smack {
   0% { transform: scale(1, 1); }
@@ -150,18 +153,34 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 /* sparkles (Sparks.tsx): a few shapes that twinkle. Only transform and opacity animate,
-   and there is one shape per sparkle, so each one is a single composited layer. --d is its delay. */
+   plus a pink/cyan copy that flashes when it glitches. --d is its delay. */
 .sparks { position: absolute; inset: 0; pointer-events: none; }
 .spark {
   position: absolute; width: var(--z); aspect-ratio: 1; margin: calc(var(--z) / -2) 0 0 calc(var(--z) / -2);
-  animation: twinkle 3.2s ease-in-out infinite;
-  animation-delay: var(--d);
+  background: radial-gradient(closest-side, rgba(255, 244, 220, .7), rgba(255, 244, 220, 0));  /* soft glow, painted once */
+  animation: twinkle 2.8s ease-in-out infinite, glitch 3.4s steps(1) infinite;
+  animation-delay: var(--d), calc(var(--d) * 1.7);
 }
 .spark svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.spark__shape { fill: var(--c); stroke: var(--ink); stroke-width: 10; stroke-linejoin: round; paint-order: stroke fill; } /* ink outline: reads on teal and orange alike */
+.spark__shape { fill: var(--c); }
+.spark__split { opacity: 0; animation: split 3.4s steps(1) infinite; animation-delay: calc(var(--d) * 1.7); }
 @keyframes twinkle {
-  0%, 100% { opacity: .8; transform: scale(.72) rotate(0deg); }
-  50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+  0%, 100% { opacity: .65; transform: scale(.75); }
+  50% { opacity: 1; transform: scale(1.1) rotate(30deg); }
+}
+/* every few seconds a sparkle glitches: it jumps about while a pink/cyan copy flashes behind it */
+@keyframes glitch {
+  0%, 84%, 100% { translate: 0 0; }
+  86% { translate: 5px -3px; }
+  88% { translate: -6px 2px; }
+  90% { translate: 2px 5px; }
+  92% { translate: -4px -3px; }
+}
+@keyframes split {
+  0%, 84%, 94%, 100% { opacity: 0; translate: 0 0; }
+  86% { opacity: .95; translate: 4px 0; }
+  88% { opacity: .95; translate: -5px 0; }
+  91% { opacity: .85; translate: 3px 0; }
 }
 
 /* the two Omars: placed by .boy, dodge the cursor (JS moves .boy__dodge), float on a loop, speak when it's close */
@@ -252,7 +271,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-weight: 800; font-size: 12px; letter-spacing: .04em; text-transform: uppercase;
   box-shadow: 0 4px 8px rgba(0, 0, 0, .18);
 }
-.strip__track { display: flex; width: max-content; animation: drift 14s linear infinite; }  /* a steady drift to the left (~120px/s), not tied to the scroll */
+.strip__track { display: flex; width: max-content; animation: drift 24s linear infinite; }  /* a steady drift to the left (~70px/s), not tied to the scroll */
 .strip__track span { padding-inline: clamp(40px, 7vw, 110px); }
 @keyframes drift { to { transform: translateX(-50%); } }
 
@@ -548,7 +567,7 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
 @keyframes pin-hop { 0%, 60%, 100% { translate: 0 0; } 70% { translate: 0 -16px; } 80% { translate: 0 0; } 87% { translate: 0 -6px; } }
 
 /* sections well off screen get .is-off (src/sectionWatch.ts, an IntersectionObserver): their endless loops pause */
-.is-off .spark, .is-off .boy__float, .is-off .stall__pin, .is-off .strip__track { animation-play-state: paused; }
+.is-off .spark, .is-off .spark__split, .is-off .boy__float, .is-off .stall__pin, .is-off .strip__track { animation-play-state: paused; }
 
 .stall__pin { animation: pin-hop 2.6s ease-in-out infinite; }
 

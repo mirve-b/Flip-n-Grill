@@ -2,14 +2,12 @@ import { Sparks, type Spark } from "./Sparks";
 
 // sparkles around the burger: [left %, top %, size %, colour, delay s, shape], relative to the whole artwork
 const SPARKS: readonly Spark[] = [
-  [11, 17, 14, "#fff4dc", 0, "star"],
-  [57, 8, 11, "#006267", 1.4, "star"],
-  [80, 24, 13, "#fff4dc", 0.7, "star"],
-  [77, 87, 11, "#d54000", 1.8, "star"],
-  [21, 83, 11, "#006267", 0.4, "plus"],
-  [6, 62, 9, "#fff4dc", 1.1, "star"],
-  [83, 66, 8.5, "#006267", 2.2, "plus"],
-  [40, 5, 8, "#d54000", 0.9, "plus"],
+  [12, 19, 7, "#fff4dc", 0, "star"],
+  [57, 10, 5.5, "#006267", 1.4, "star"],
+  [80, 26, 6.5, "#fff4dc", 0.7, "star"],
+  [76, 86, 5.5, "#d54000", 1.8, "star"],
+  [22, 82, 5.5, "#006267", 0.4, "plus"],
+  [7, 62, 4.5, "#fff4dc", 1.1, "star"],
 ];
 
 /** 02 / The investigation: the hero burger collage beside a short line about getting it right. */
