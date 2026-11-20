@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sparks, type Spark } from "./Sparks";
 
 /**
@@ -10,24 +10,29 @@ import { Sparks, type Spark } from "./Sparks";
 // sparkles around the burger: [left %, top %, size %, colour, delay s, shape], all relative to the burger
 const SPARKS: readonly Spark[] = [
   [-7, 12, 11, "#ffd23f", 0, "star"],
-  [9, -9, 6.5, "#f1d7b3", 0.6, "star"],
-  [30, -14, 7, "#ff9400", 1.9, "plus"],
-  [70, -10, 5.5, "#f1d7b3", 2.3, "star"],
-  [95, 2, 12, "#ffd23f", 1.1, "star"],
-  [106, 34, 6.5, "#f1d7b3", 0.3, "plus"],
-  [100, 74, 9, "#ffd23f", 1.6, "star"],
-  [78, 100, 7, "#f1d7b3", 0.4, "star"],
-  [26, 102, 6, "#ff9400", 2.6, "star"],
-  [2, 86, 6.5, "#ffd23f", 1.3, "plus"],
-  [-12, 54, 8, "#f1d7b3", 0.9, "star"],
-  [50, -18, 3, "#ffd23f", 3, "dot"],
-  [113, 58, 3, "#ffd23f", 2, "dot"],
-  [-15, 32, 2.5, "#ff9400", 2.8, "dot"],
-  [86, -16, 3.5, "#f1d7b3", 1.4, "star"],
-  [-4, 104, 3, "#f1d7b3", 2.2, "dot"],
-  [112, 90, 4.5, "#f1d7b3", 0.8, "star"],
-  [40, 108, 2.5, "#ffd23f", 1.7, "dot"],
+  [30, -14, 7, "#ff9400", 1.2, "plus"],
+  [95, 2, 12, "#ffd23f", 0.6, "star"],
+  [106, 34, 6.5, "#f1d7b3", 1.8, "plus"],
+  [100, 74, 9, "#ffd23f", 0.3, "star"],
+  [78, 100, 7, "#f1d7b3", 1.4, "star"],
+  [2, 86, 8, "#ffd23f", 0.9, "plus"],
+  [-12, 54, 8, "#f1d7b3", 2.1, "star"],
 ] as const;
+
+/* phones and tablets held upright hide the desktop collage (same query as styles.css); sideways they get the desktop layout */
+const NARROW = "(orientation: portrait) and (max-width: 1024px)";
+
+function useNarrow() {
+  const [narrow, setNarrow] = useState(() => matchMedia(NARROW).matches);
+  useEffect(() => {
+    const mq = matchMedia(NARROW);
+    const on = () => setNarrow(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return narrow;
+}
 
 const BOYS = [
   { who: 1, cls: "boy--1", say: "OUCH!", tag: "I flip" },
@@ -37,11 +42,12 @@ const BOYS = [
 export function Hero() {
   const stage = useRef<HTMLDivElement>(null);
   const burger = useRef<HTMLButtonElement>(null);
+  const narrow = useNarrow();
 
   // the two boys edge away from a nearby cursor (or a tap) and say something
   useEffect(() => {
     const el = stage.current;
-    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!el || narrow || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const boys = [...el.querySelectorAll<HTMLElement>(".boy")];
     let frame = 0;
     let px = -1e4;
@@ -85,7 +91,7 @@ export function Hero() {
       el.removeEventListener("pointerleave", leave);
       el.removeEventListener("pointercancel", leave);
     };
-  }, []);
+  }, [narrow]);
 
   // smack the burger: restart the jiggle every click
   const smack = () => {
@@ -100,14 +106,18 @@ export function Hero() {
     <header className="hero" id="top">
       <div className="hero__stage" ref={stage}>
 
-        <img decoding="async" className="h h--burst-a" src="/art/starburst.webp" alt="" />
-        <img decoding="async" className="h h--burst-b" src="/art/starburst.webp" alt="" />
-        <img decoding="async" className="h h--paper h--lift" src="/art/iba-paper.webp" alt="" />
-        <img decoding="async" className="h h--plate h--lift" src="/art/menu-plate.webp" alt="" />
-        <img decoding="async" className="h h--two h--lift" src="/art/two-omars.webp" alt="" />
-        <img decoding="async" className="h h--card h--lift" src="/art/smash-card.webp" alt="" />
-        <img decoding="async" className="h h--note h--lift" src="/art/sticky-note.webp" alt="" />
-        <img decoding="async" className="h h--mozzy h--lift" src="/art/mozzy.webp" alt="" />
+        <img decoding="async" fetchPriority="low" className="h h--burst-a" src="/art/starburst.webp" alt="" />
+        <img decoding="async" fetchPriority="low" className="h h--burst-b" src="/art/starburst.webp" alt="" />
+        {!narrow && (
+          <>
+            <img decoding="async" fetchPriority="low" className="h h--paper h--lift" src="/art/iba-paper.webp" width={800} height={1263} alt="" />
+            <img decoding="async" fetchPriority="low" className="h h--plate h--lift" src="/art/menu-plate.webp" width={1200} height={773} alt="" />
+            <img decoding="async" fetchPriority="low" className="h h--two h--lift" src="/art/two-omars.webp" width={800} height={433} alt="" />
+            <img decoding="async" fetchPriority="low" className="h h--card h--lift" src="/art/smash-card.webp" width={540} height={540} alt="" />
+            <img decoding="async" fetchPriority="low" className="h h--note h--lift" src="/art/sticky-note.webp" width={353} height={363} alt="" />
+            <img decoding="async" fetchPriority="low" className="h h--mozzy h--lift" src="/art/mozzy.webp" width={420} height={394} alt="" />
+          </>
+        )}
 
         <h1 className="hero__title">
           <span className="hero__flip">
@@ -115,17 +125,17 @@ export function Hero() {
           </span>
           <span className="hero__grill">GRILL</span>
         </h1>
-        <img decoding="async" className="h h--smiley" src="/art/smiley.webp" alt="" />
+        {!narrow && <img decoding="async" fetchPriority="low" className="h h--smiley" src="/art/smiley.webp" alt="" />}
 
         <p className="hero__label hero__label--teal">Stall at IBA Karachi</p>
         <p className="hero__label hero__label--orange">Catering all over karachi</p>
 
         <button className="h h--burger" ref={burger} onClick={smack} onAnimationEnd={(e) => e.target === e.currentTarget && burger.current?.classList.remove("is-smacked")} aria-label="Smack the burger">
-          <img decoding="async" src="/art/burger.webp" alt="" />
-          <Sparks items={SPARKS} />
+          <img decoding="async" fetchPriority="high" width={1126} height={959} src="/art/burger.webp" alt="" />
+          <Sparks items={narrow ? SPARKS.slice(0, 4) : SPARKS} />
         </button>
 
-        {BOYS.map((b) => (
+        {!narrow && BOYS.map((b) => (
           <div className={`boy ${b.cls}`} key={b.who}>
             <div className="boy__dodge">
               <div className="boy__float">

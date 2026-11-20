@@ -28,7 +28,9 @@ export function Menu() {
 
           <div className="menu__counter" aria-hidden="true">
             <Dots cols={4} rows={3} className="menu__dots" />
-            <img decoding="async" className="menu__pick" key={active.name} src={active.img} alt="" />
+            <div className="menu__pick" key={active.name}>
+              <img decoding="async" src={active.img} alt="" />
+            </div>
             <p className="menu__pickname">{active.name}</p>
             {active.blurb && <p className="menu__pickblurb">{active.blurb}</p>}
           </div>

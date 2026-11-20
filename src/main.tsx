@@ -8,6 +8,16 @@ import "./styles.css";
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 if (location.hash && location.hash !== "#contact") history.replaceState(null, "", location.pathname + location.search);
 
+// the mono text uses Apple Symbols, which only Apple devices have. Elsewhere (Android, Windows) it falls back to
+// Space Mono, which runs wider, so .no-apple-mono lets the hero labels shrink to the same width (styles.css)
+const probe = document.createElement("canvas").getContext("2d");
+if (probe) {
+  probe.font = '40px "Apple Symbols", serif';
+  const withApple = probe.measureText("Stall at IBA Karachi").width;
+  probe.font = "40px serif";
+  if (Math.abs(withApple - probe.measureText("Stall at IBA Karachi").width) < 0.5) document.documentElement.classList.add("no-apple-mono");
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
@@ -15,12 +25,12 @@ createRoot(document.getElementById("root")!).render(
 );
 
 /*
- * Splash → intro. The splash stays at least ~2s (so its animation can finish), waits
- * for the fonts and the hero burger, and never longer than 4s. Adding .is-ready
- * plays the hero's entrance as the splash fades.
+ * Splash → intro. The splash waits for the fonts and the hero burger, but only
+ * briefly: at least 200ms, and never longer than 1.5s. Adding .is-ready plays
+ * the hero's entrance as the splash fades.
  */
-const MIN = 2000;
-const MAX = 4000;
+const MIN = 200;
+const MAX = 1500;
 const hero = new Image();
 hero.src = "/art/burger.webp";
 const ready = Promise.all([document.fonts.ready, hero.decode().catch(() => undefined)]);

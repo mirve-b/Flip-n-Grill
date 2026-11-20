@@ -50,7 +50,7 @@ export default function App() {
   }, [page]);
 
   // pauses off-screen loops and colours any rubber-band gap at the page's ends (src/sectionWatch.ts);
-  // the scroll animations themselves are pure CSS ("motion" in styles.css)
+  // (nothing animates with the scroll position itself: see "motion" in styles.css)
   useEffect(() => watchSections(page === "home" ? "var(--teal)" : "var(--red)"), [page]);
 
   // gentle scroll reveals: each [data-reveal] fades/lifts in once, the first time it's seen

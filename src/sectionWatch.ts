@@ -1,6 +1,6 @@
 /**
  * Everything here uses IntersectionObserver, so nothing runs on scroll frames: the browser calls back only
- * when something crosses a boundary. (The scroll animations are pure CSS: "motion" in styles.css.)
+ * when something crosses a boundary. (Animations: "motion" in styles.css.)
  * - Sections well off screen get .is-off, which pauses their endless loops (sparkles, floating Omars...).
  * - If a browser still rubber-bands past the ends, the gap is coloured like the edge being pulled:
  *   black while the footer is in view, the top colour otherwise.
