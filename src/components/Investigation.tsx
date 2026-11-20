@@ -16,7 +16,7 @@ export function Investigation() {
     <section className="invest" aria-labelledby="invest-title">
       <div className="wrap invest__inner">
         <div data-reveal="left" className="invest__art">
-          <img decoding="async" src="/art/burger-burst.webp" width="1400" height="1133" alt="Smash burger with cheese, onions and jalapeños" loading="lazy" />
+          <img decoding="async" src="/art/burger-burst.webp" width="1400" height="1133" alt="Smash burger with cheese, onions and jalapeños" />
           <Sparks items={SPARKS} />
         </div>
         <div className="invest__text" data-reveal>
