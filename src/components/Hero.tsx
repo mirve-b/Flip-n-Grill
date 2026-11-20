@@ -9,14 +9,16 @@ import { Sparks, type Spark } from "./Sparks";
  */
 // sparkles around the burger: [left %, top %, size %, colour, delay s, shape], all relative to the burger
 const SPARKS: readonly Spark[] = [
-  [-7, 12, 11, "#ffd23f", 0, "star"],
-  [30, -14, 7, "#ff9400", 1.2, "plus"],
-  [95, 2, 12, "#ffd23f", 0.6, "star"],
-  [106, 34, 6.5, "#f1d7b3", 1.8, "plus"],
-  [100, 74, 9, "#ffd23f", 0.3, "star"],
-  [78, 100, 7, "#f1d7b3", 1.4, "star"],
-  [2, 86, 8, "#ffd23f", 0.9, "plus"],
-  [-12, 54, 8, "#f1d7b3", 2.1, "star"],
+  [-9, 9, 24, "#fff4dc", 0, "star"],
+  [97, -1, 25, "#fff4dc", 0.6, "star"],
+  [102, 77, 19, "#ff9400", 0.3, "star"],
+  [-1, 89, 15, "#ff9400", 0.9, "plus"],
+  [30, -16, 13, "#fff4dc", 1.2, "plus"],
+  [109, 37, 13, "#ff9400", 1.8, "plus"],
+  [79, 104, 14, "#fff4dc", 1.4, "star"],
+  [-15, 52, 15, "#ff9400", 2.1, "star"],
+  [63, -18, 10, "#fff4dc", 2.5, "star"],
+  [19, 108, 10, "#fff4dc", 0.5, "star"],
 ] as const;
 
 /* phones and tablets held upright hide the desktop collage (same query as styles.css); sideways they get the desktop layout */
@@ -55,8 +57,9 @@ export function Hero() {
 
     const update = () => {
       frame = 0;
-      for (const b of boys) {
-        const r = b.getBoundingClientRect();
+      const rects = boys.map((b) => b.getBoundingClientRect()); // measure both boys first, then move them (no forced re-layout)
+      boys.forEach((b, i) => {
+        const r = rects[i];
         const cx = r.left + r.width / 2;
         const cy = r.top + r.height / 2;
         const dx = cx - px;
@@ -68,7 +71,7 @@ export function Hero() {
         const dodge = b.querySelector<HTMLElement>(".boy__dodge")!;
         dodge.style.transform = `translate(${((dx / d) * push).toFixed(1)}px, ${((dy / d) * push * 0.6).toFixed(1)}px) rotate(${((dx / d) * k * 8).toFixed(1)}deg)`;
         b.classList.toggle("is-near", k > 0.35);
-      }
+      });
     };
     const move = (e: PointerEvent) => {
       px = e.clientX;
@@ -132,7 +135,7 @@ export function Hero() {
 
         <button className="h h--burger" ref={burger} onClick={smack} onAnimationEnd={(e) => e.target === e.currentTarget && burger.current?.classList.remove("is-smacked")} aria-label="Smack the burger">
           <img decoding="async" fetchPriority="high" width={1126} height={959} src="/art/burger.webp" alt="" />
-          <Sparks items={narrow ? SPARKS.slice(0, 4) : SPARKS} />
+          <Sparks items={narrow ? SPARKS.slice(0, 6) : SPARKS} />
         </button>
 
         {!narrow && BOYS.map((b) => (
