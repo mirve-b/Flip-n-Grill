@@ -4,9 +4,9 @@ import App from "./App";
 import "./styles.css";
 
 // a reload always opens at the top: drop any #section a nav click left in the address bar
-// (only the #contact page is kept) and stop the browser restoring the old scroll position
+// (only the #contact and #brand pages are kept) and stop the browser restoring the old scroll position
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-if (location.hash && location.hash !== "#contact") history.replaceState(null, "", location.pathname + location.search);
+if (location.hash && location.hash !== "#contact" && location.hash !== "#brand") history.replaceState(null, "", location.pathname + location.search);
 
 // the mono text uses Apple Symbols, which only Apple devices have. Elsewhere (Android, Windows) it falls back to
 // Space Mono, which runs wider, so .no-apple-mono lets the hero labels shrink to the same width (styles.css)
@@ -38,6 +38,9 @@ const elapsed = () => performance.now();
 Promise.race([ready, new Promise((r) => setTimeout(r, MAX))]).then(() => {
   setTimeout(() => {
     document.documentElement.classList.add("is-ready");
+    // the case files and the burger art are downloaded with the page; unpack them now too, so they're ready the
+    // instant you scroll to them instead of the browser decoding them on the way in
+    document.querySelectorAll<HTMLImageElement>(".story__docs img, .invest__art img").forEach((img) => img.decode().catch(() => {}));
     const splash = document.getElementById("splash");
     splash?.classList.add("is-done");
     setTimeout(() => splash?.remove(), 700);

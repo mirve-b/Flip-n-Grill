@@ -35,6 +35,7 @@ export function Footer({ cta = true }: { cta?: boolean }) {
               <li><a href="#menu">Menu</a></li>
               <li><a href="#stall">Pop up</a></li>
               <li><a href="#contact">Booking</a></li>
+              <li><a className="footer__bb" href="#brand">Brand book ✦</a></li>
             </ul>
           </nav>
           {links.length > 0 && (
@@ -50,7 +51,10 @@ export function Footer({ cta = true }: { cta?: boolean }) {
             </div>
           )}
         </div>
-        <p className="wrap footer__small">© {new Date().getFullYear()} Flip &amp; Grill · Karachi</p>
+        <p className="wrap footer__small">
+          © {new Date().getFullYear()} Flip &amp; Grill · Karachi · A product of{" "}
+          <a className="footer__mable" href="https://mable.cc" target="_blank" rel="noopener">MABLE</a>
+        </p>
       </div>
     </footer>
   );

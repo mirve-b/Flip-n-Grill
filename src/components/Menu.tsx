@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { burgers, drinks, meals, sides, type MenuItem } from "../data/menu";
 import { Dots } from "./Dots";
 
@@ -17,6 +17,17 @@ const COUNT = SECTIONS.reduce((n, s) => n + s.items.length, 0);
 
 export function Menu() {
   const [active, setActive] = useState<MenuItem>(burgers[0]);
+  const wrap = useRef<HTMLDivElement>(null);
+
+  // the roll-open animation needs the receipt's real height (--rh) so the roll stops exactly where the paper ends
+  useEffect(() => {
+    const el = wrap.current;
+    const paper = el?.querySelector<HTMLElement>(".receipt");
+    if (!el || !paper) return;
+    const ro = new ResizeObserver(() => el.style.setProperty("--rh", `${paper.offsetHeight}px`));
+    ro.observe(paper);
+    return () => ro.disconnect();
+  }, []);
 
   return (
     <section className="menu" id="menu" aria-labelledby="menu-title">
@@ -36,7 +47,7 @@ export function Menu() {
           </div>
         </div>
 
-        <div className="receipt-wrap" data-reveal>
+        <div className="receipt-wrap" data-reveal ref={wrap}>
           <div className="receipt">
             <header className="receipt__head">
               <p className="receipt__brand">Flip &amp; Grill</p>
@@ -77,6 +88,10 @@ export function Menu() {
               <p>Thank you! Come hungry again.</p>
             </footer>
           </div>
+          {/* the receipt rolls open as you scroll in: a paper roll slides down, uncovering it top to bottom (styles.css) */}
+          <span className="receipt-cover" aria-hidden="true">
+            <span className="receipt-curtain"><i className="receipt-roll" /></span>
+          </span>
         </div>
       </div>
     </section>

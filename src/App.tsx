@@ -8,11 +8,12 @@ import { Menu } from "./components/Menu";
 import { Stall } from "./components/Stall";
 import { Catering } from "./components/Catering";
 import { Footer } from "./components/Footer";
+import { BrandBook } from "./components/BrandBook";
 import { watchSections } from "./sectionWatch";
 
-/** Two pages: the home page, and the booking page at #contact. */
-type Page = "home" | "contact";
-const pageFromHash = (): Page => (location.hash === "#contact" ? "contact" : "home");
+/** Three pages: the home page, the booking page at #contact and the brand book at #brand. */
+type Page = "home" | "contact" | "brand";
+const pageFromHash = (): Page => (location.hash === "#contact" ? "contact" : location.hash === "#brand" ? "brand" : "home");
 
 export default function App() {
   const [page, setPage] = useState<Page>(pageFromHash);
@@ -34,24 +35,25 @@ export default function App() {
     jump();
     // images above the section are still loading and push it down, so jump again once they're in
     const pending = [...document.images].filter((img) => !img.complete && img.getBoundingClientRect().top < target.getBoundingClientRect().top);
+    // any sign the person has moved on cancels the second jump: scrolling, a key, a click, or another link
+    // (without the last two, clicking Menu right after landing on Pop up got dragged back to Pop up)
     let cancelled = false;
     const userScrolled = () => (cancelled = true);
-    window.addEventListener("wheel", userScrolled, { once: true, passive: true });
-    window.addEventListener("touchstart", userScrolled, { once: true, passive: true });
+    const CANCEL = ["wheel", "touchstart", "keydown", "pointerdown", "hashchange"] as const;
+    CANCEL.forEach((t) => window.addEventListener(t, userScrolled, { once: true, passive: true }));
     Promise.race([
       Promise.all(pending.map((img) => new Promise((r) => { img.addEventListener("load", r, { once: true }); img.addEventListener("error", r, { once: true }); }))),
       new Promise((r) => setTimeout(r, 2500)),
     ]).then(() => !cancelled && jump());
     return () => {
       cancelled = true;
-      window.removeEventListener("wheel", userScrolled);
-      window.removeEventListener("touchstart", userScrolled);
+      CANCEL.forEach((t) => window.removeEventListener(t, userScrolled));
     };
   }, [page]);
 
   // pauses off-screen loops and colours any rubber-band gap at the page's ends (src/sectionWatch.ts);
   // (nothing animates with the scroll position itself: see "motion" in styles.css)
-  useEffect(() => watchSections(page === "home" ? "var(--hero-edge)" : "var(--red)"), [page]);
+  useEffect(() => watchSections(page === "contact" ? "var(--red)" : "var(--hero-edge)"), [page]);
 
   // gentle scroll reveals: each [data-reveal] fades/lifts in once, the first time it's seen
   useEffect(() => {
@@ -77,6 +79,10 @@ export default function App() {
       {page === "contact" ? (
         <main>
           <Catering />
+        </main>
+      ) : page === "brand" ? (
+        <main>
+          <BrandBook />
         </main>
       ) : (
         <main>

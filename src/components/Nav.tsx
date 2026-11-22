@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const LINKS = [
   { href: "#top", label: "Home" },
@@ -15,6 +15,25 @@ const LINKS = [
 export function Nav() {
   const [open, setOpen] = useState(false);
   const [solid, setSolid] = useState(false);
+  const toggle = useRef<HTMLButtonElement>(null);
+  const links = useRef<HTMLUListElement>(null);
+
+  // while the phone menu is open, a tap or click anywhere else closes it (so does Esc). The burger button toggles
+  // it itself, and the links close it when they're followed, so those two are left alone here.
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (!toggle.current?.contains(t) && !links.current?.contains(t)) setOpen(false);
+    };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
 
   // the bar turns solid once you're 40px down. An invisible 40px marker at the top of the page tells us
   // (IntersectionObserver), so nothing runs while you scroll and React only re-renders when it flips.
@@ -31,10 +50,10 @@ export function Nav() {
   return (
     <nav className={`nav ${open ? "is-open" : ""} ${solid || open ? "nav--solid" : ""}`} aria-label="Main">
       <a className="nav__brand" href="#top">Flip &amp; Grill</a>
-      <button className="nav__toggle" aria-expanded={open} aria-controls="nav-links" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen(!open)}>
+      <button ref={toggle} className="nav__toggle" aria-expanded={open} aria-controls="nav-links" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen(!open)}>
         <i /><i /><i />
       </button>
-      <ul className="nav__links" id="nav-links">
+      <ul ref={links} className="nav__links" id="nav-links">
         {LINKS.map((l) => (
           <li key={l.href}>
             <a href={l.href} onClick={() => setOpen(false)}>{l.label}</a>
