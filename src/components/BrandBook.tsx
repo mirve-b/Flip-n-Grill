@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { Sparks, type Spark } from "./Sparks";
 import "./brand.css";
 
 /**
@@ -11,9 +10,6 @@ import "./brand.css";
 // the logo files in public/brand/; while WORDMARK is empty its slot shows a placeholder
 const LOGO = "/brand/logo.svg";
 const WORDMARK = "";
-
-// everything MABLE does for Flip & Grill
-const WORK = ["Brand identity", "Strategy", "Art direction", "Assets & kit", "Content", "Social media", "Website"];
 
 const COLOURS = [
   { name: "Primary", hex: "#006267", ink: "#f1d7b3" },
@@ -28,13 +24,6 @@ const BOYS = [
   { who: 1, tag: "I flip", say: "OUCH!", bg: "var(--orange)" },
   { who: 2, tag: "I grill", say: "Careful!", bg: "var(--cream)" },
 ] as const;
-
-const COVER_SPARKS: readonly Spark[] = [
-  [10, 22, 3.2, "#fff4dc", 0, "star"],
-  [88, 18, 2.6, "#ff9400", 0.8, "plus"],
-  [84, 70, 3.4, "#fff4dc", 1.6, "star"],
-  [16, 76, 2.4, "#ffd23f", 0.4, "plus"],
-];
 
 type InProps = {
   d?: number; as?: "div" | "p" | "h1" | "span" | "figure" | "ul" | "a"; className?: string; style?: CSSProperties; children?: ReactNode;
@@ -56,34 +45,13 @@ const SLIDES: { key: string; label: string; body: ReactNode }[] = [
     body: (
       <div className="bb-intro">
         <div className="bb-intro__text">
-          <In as="p" d={1} className="bb-intro__kicker">A MABLE project</In>
+          <In as="p" d={1} className="bb-intro__kicker">A MABLE STD project</In>
           <In as="h1" d={2} className="bb-intro__title">Flip &amp; Grill</In>
           <In as="p" d={3} className="bb-intro__sub">Brand book · Vol. 01</In>
-          <In as="ul" d={4} className="bb-intro__work" aria-label="What MABLE does for Flip & Grill">
-            {WORK.map((w) => <li key={w}>{w}</li>)}
-          </In>
           <In as="a" d={6} className="bb-intro__credit" href="https://mable.cc" target="_blank" rel="noopener">
-            Designed &amp; engineered by <img className="bb-intro__bunny" src="/brand/mable-bunny.svg" alt="" /> <b>MABLE</b> <span aria-hidden="true">↗</span>
+            Designed &amp; engineered by <b>MABLE STD</b> <span aria-hidden="true">↗</span>
           </In>
         </div>
-      </div>
-    ),
-  },
-  {
-    key: "cover", label: "Flip & Grill",
-    body: (
-      <div className="bb-cover">
-        <img className="bb-cover__burst in in--spin" src="/art/starburst.webp" alt="" />
-        <Sparks items={COVER_SPARKS} />
-        <In as="p" d={1} className="bb-tag in--drop">Brand book · Vol. 01</In>
-        <h1 className="bb-word">
-          <In as="span" d={2} className="in--stamp">FLIP<small>&amp;</small></In>
-          <In as="span" d={3} className="bb-word__grill in--stamp">GRILL</In>
-        </h1>
-        <In as="p" d={4} className="bb-cover__line">Starring two Omars &amp; one very hot grill.</In>
-        {BOYS.map((b, i) => (
-          <In key={b.who} d={5 + i} className={`bb-cover__boy bb-cover__boy--${b.who} in--hop`}><img src={`/mascots/omar-${b.who}.webp`} alt="" /></In>
-        ))}
       </div>
     ),
   },
@@ -162,7 +130,6 @@ const SLIDES: { key: string; label: string; body: ReactNode }[] = [
             </In>
           ))}
         </div>
-        <In as="p" d={4} className="bb-rule">Two guys. Both named Omar. Never apart.</In>
       </div>
     ),
   },
@@ -209,15 +176,30 @@ const SLIDES: { key: string; label: string; body: ReactNode }[] = [
         <In d={0} className="in--pop"><img className="bb-end__logo" src={LOGO} alt="Flip & Grill" /></In>
         <In as="a" d={2} className="btn btn--cream" href="#top">Back to the burgers</In>
         <In as="a" d={3} className="bb-end__credit" href="https://mable.cc" target="_blank" rel="noopener">
-          <img src="/brand/mable-bunny.svg" alt="" /> Designed &amp; engineered by MABLE ↗
+          Designed &amp; engineered by MABLE STD ↗
         </In>
       </div>
     ),
   },
 ];
 
+// phones and upright tablets: the slides become one native, snap-assisted scroll instead of a swipe deck
+const FLOW_QUERY = "(orientation: portrait) and (max-width: 1024px)";
+function useFlow() {
+  const [flow, setFlow] = useState(() => matchMedia(FLOW_QUERY).matches);
+  useEffect(() => {
+    const mq = matchMedia(FLOW_QUERY);
+    const on = () => setFlow(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return flow;
+}
+
 export function BrandBook() {
   const [index, setIndex] = useState(0);
+  const flow = useFlow();
+  const [seen, setSeen] = useState<ReadonlySet<number>>(() => new Set([0]));
   const deck = useRef<HTMLDivElement>(null);
   const lock = useRef(0);
   const last = SLIDES.length - 1;
@@ -242,10 +224,27 @@ export function BrandBook() {
     return () => document.documentElement.classList.remove("deck-open");
   }, []);
 
-  // keys, wheel / trackpad and swipes. A slide whose content is taller than the screen (small phones) scrolls first.
+  // flow mode: a slide plays its entrance the first time it scrolls into view; the dot follows the slide in view
   useEffect(() => {
     const el = deck.current;
-    if (!el) return;
+    if (!flow || !el) return;
+    const slides = [...el.querySelectorAll<HTMLElement>(".slide")];
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const i = slides.indexOf(e.target as HTMLElement);
+        if (e.intersectionRatio >= 0.5 || e.intersectionRect.height >= el.clientHeight * 0.5) setIndex(i);
+        setSeen((s) => (s.has(i) ? s : new Set(s).add(i)));
+      }
+    }, { root: el, threshold: [0.25, 0.5] });
+    slides.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, [flow]);
+
+  // keys, wheel / trackpad and swipes (deck mode only). A slide taller than the screen scrolls first.
+  useEffect(() => {
+    const el = deck.current;
+    if (flow || !el) return;
     const canScroll = (dir: number) => {
       const s = el.querySelector<HTMLElement>(".slide.is-active");
       if (!s || s.scrollHeight <= s.clientHeight + 2) return false;
@@ -293,15 +292,15 @@ export function BrandBook() {
       el.removeEventListener("touchend", onEnd);
       clearTimeout(accTimer);
     };
-  }, [go, step, last]);
+  }, [go, step, last, flow]);
 
   return (
-    <div className="deck" ref={deck} id="brand-book" data-slide={SLIDES[index].key}>
+    <div className={`deck${flow ? " is-flow" : ""}`} ref={deck} id="brand-book" data-slide={SLIDES[index].key}>
       {SLIDES.map((s, i) => (
         <section
           key={s.key}
-          className={`slide slide--${s.key} ${i === index ? "is-active" : ""} ${i < index ? "is-past" : ""}`}
-          aria-hidden={i !== index}
+          className={`slide slide--${s.key} ${(flow ? seen.has(i) : i === index) ? "is-active" : ""} ${!flow && i < index ? "is-past" : ""}`}
+          aria-hidden={!flow && i !== index}
           aria-label={`${i + 1} of ${SLIDES.length}: ${s.label}`}
         >
           {s.body}
@@ -311,7 +310,7 @@ export function BrandBook() {
       <a className="deck__back" href="#top">← Back to the burgers</a>
       <nav className="deck__dots" aria-label="Slides">
         {SLIDES.map((s, i) => (
-          <button key={s.key} aria-current={i === index} aria-label={`Slide ${i + 1}: ${s.label}`} className={i === index ? "is-on" : ""} onClick={() => go(i)} />
+          <button key={s.key} aria-current={i === index} aria-label={`Slide ${i + 1}: ${s.label}`} className={i === index ? "is-on" : ""} onClick={() => (flow ? deck.current?.querySelectorAll(".slide")[i]?.scrollIntoView({ behavior: "smooth" }) : go(i))} />
         ))}
       </nav>
     </div>

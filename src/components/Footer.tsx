@@ -28,10 +28,8 @@ export function Footer({ cta = true }: { cta?: boolean }) {
 
       <div className="footer__main">
         <div className="wrap footer__grid">
-          <a className="footer__made" href="https://mable.cc" target="_blank" rel="noopener">
-            This brand was designed &amp; engineered by <b>MABLE</b> <span aria-hidden="true">↗</span>
-          </a>
-          <nav aria-label="Footer">
+          <p className="footer__tag">Smash burgers, flipped fresh at <em>IBA&nbsp;Karachi.</em></p>
+          <nav className="footer__nav" aria-label="Footer">
             <p className="footer__head">Explore</p>
             <ul>
               <li><a href="#story">About</a></li>
@@ -42,7 +40,7 @@ export function Footer({ cta = true }: { cta?: boolean }) {
             </ul>
           </nav>
           {links.length > 0 && (
-            <div>
+            <div className="footer__hi">
               <p className="footer__head">Say hi</p>
               <ul>
                 {links.map((l) => (
@@ -54,13 +52,15 @@ export function Footer({ cta = true }: { cta?: boolean }) {
             </div>
           )}
         </div>
-        <p className="wrap footer__small">
-          © {new Date().getFullYear()} Flip &amp; Grill · Karachi
-        </p>
+        <div className="wrap footer__base">
+          <p className="footer__small">© {new Date().getFullYear()} Flip &amp; Grill · Karachi</p>
+          <a className="footer__made" href="https://mable.cc" target="_blank" rel="noopener">
+            Designed &amp; engineered by <b>MABLE STD</b> <span aria-hidden="true">↗</span>
+          </a>
+        </div>
 
-        {/* the sign-off: edge to edge, cut off by the bottom of the page; Omar pops up behind it once it lands */}
+        {/* the sign-off: edge to edge, cut off by the bottom of the page */}
         <div className="footer__sign" data-reveal aria-hidden="true">
-          <span className="footer__peek"><img src="/mascots/omar-1.webp" alt="" loading="lazy" /></span>
           <span className="footer__word">
             {WORD.map((ch, i) => (
               <span key={i} className={ch === "&" ? "footer__amp" : undefined} style={{ "--i": i } as CSSProperties}>{ch}</span>

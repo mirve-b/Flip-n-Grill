@@ -15,13 +15,13 @@ export function Story() {
             <p className="story__smash" aria-hidden="true">SMASH!</p>
           </div>
 
-          <div className="story__docs" data-reveal="docs">
+          <div className="story__docs">
             <Dots cols={4} rows={3} className="story__dots story__dots--a" />
             <Dots cols={4} rows={4} className="story__dots story__dots--b" />
             <Dots cols={2} rows={4} className="story__dots story__dots--c" />
-            <img decoding="async" className="story__file" src="/art/case-file.webp" alt="Case file: The case of the sad burger. Thick, lifeless patties. Two guys, both named Omar. One spatula, one grill, one very hard smash. Case closed." />
+            <img decoding="sync" className="story__file" src="/art/case-file.webp" alt="Case file: The case of the sad burger. Thick, lifeless patties. Two guys, both named Omar. One spatula, one grill, one very hard smash. Case closed." />
             <span className="story__tape" aria-hidden="true" />
-            <img decoding="async" className="story__folder" src="/art/case-folder.webp" alt="" />
+            <img decoding="sync" className="story__folder" src="/art/case-folder.webp" alt="" />
             <span className="story__stamp" aria-hidden="true">Confidential!</span>
           </div>
         </div>

@@ -475,6 +475,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .cater__done { display: grid; gap: 14px; justify-items: start; }
 .cater__donebig { font-weight: 900; font-size: 32px; text-transform: uppercase; color: var(--red); }
 
+/* no scrolling while the splash is up (main.tsx also blocks touch / wheel / keys until it goes) */
+html:has(#splash:not(.is-done)), html:has(#splash:not(.is-done)) body { overflow: hidden; }
+
 /* ---------- footer ---------- */
 .footer__cta { background: var(--orange); padding-block: calc(80 * var(--s)); }
 .footer__ctain { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
@@ -483,30 +486,49 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .footer__main { background: var(--ink); color: var(--cream); padding-top: 64px; overflow: hidden; }
 .footer__grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; align-items: start; }
 .footer__brand { font-weight: 800; font-size: 28px; text-transform: uppercase; letter-spacing: -.01em; }
-.footer__made { display: block; max-width: 300px; font-size: clamp(18px, 1.6vw, 22px); line-height: 1.3; text-decoration: none; opacity: .9; }
-.footer__made b { font-family: var(--f-head); font-weight: 900; letter-spacing: .06em; color: var(--orange); }
-.footer__made:hover b { text-decoration: underline; text-underline-offset: 4px; }
-.footer__head { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .6; margin-bottom: 10px; }
+/* hierarchy: a big tagline, the page links in the heading face, contacts quieter, then a hairline base bar */
+.footer__tag { font-family: var(--f-head); font-size: clamp(32px, 3.8vw, 60px); line-height: .95; text-transform: uppercase; max-width: 11em; }
+.footer__tag em { font-style: normal; color: var(--orange); }
+.footer__head { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .5; margin-bottom: 14px; }
 .footer__main li + li { margin-top: 6px; }
 .footer__main a { text-decoration: none; font-weight: 600; }
 .footer__main a:hover { color: var(--orange); }
+.footer__nav a { font-family: var(--f-head); font-weight: 400; font-size: clamp(20px, 1.7vw, 26px); text-transform: uppercase; letter-spacing: .02em; line-height: 1.15; }
+.footer__nav li + li { margin-top: 2px; }
+.footer__hi a { font-size: 15px; font-weight: 500; opacity: .75; }
+.footer__hi a:hover { opacity: 1; }
 .footer__bb { color: var(--orange); }   /* the brand book link stands out a little */
-.footer__small { margin-top: 44px; font-family: var(--f-mono); font-size: 12px; opacity: .6; }
+/* base bar: copyright one side, the MABLE STD credit the other, both small and on one line */
+.footer__base { margin-top: clamp(48px, 6vw, 80px); padding-top: 18px; border-top: 1px solid rgb(241 215 179 / .14);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; }
+.footer__small { font-family: var(--f-mono); font-size: 12px; opacity: .55; }
+.footer__main .footer__made { font-family: var(--f-mono); font-size: 12px; font-weight: 400; letter-spacing: .04em; white-space: nowrap; opacity: .85; }
+.footer__made b { font-family: var(--f-head); font-weight: 400; font-size: 15px; letter-spacing: .06em; color: var(--orange); margin-left: .25em; }
+.footer__main .footer__made:hover { color: inherit; opacity: 1; }
+.footer__made:hover b { text-decoration: underline; text-underline-offset: 3px; }
 
 /* the sign-off: a giant FLIP & GRILL across the full width, its bottom sliced off by the page edge. When the footer
-   comes into view each letter rises in turn (transform only), then Omar pops up from behind it to peek */
+   comes into view each letter rises in turn (transform only) */
 .footer__sign { position: relative; margin-top: clamp(20px, 3vw, 40px); font-family: var(--f-head); font-weight: 900; font-size: 24.4vw; line-height: .8; }
 .footer__word { display: flex; justify-content: center; height: .66em; overflow: hidden; color: var(--orange); letter-spacing: -.01em; }
 .footer__word span { display: block; }
 .footer__amp { color: var(--cream); font-size: .42em; align-self: flex-start; margin: .35em .04em 0; }
-.footer__peek { position: absolute; left: 60%; bottom: calc(.66em - 2px); width: .5em; height: .42em; overflow: hidden; }
-.footer__peek img { width: 100%; }
 .can-reveal .footer__sign[data-reveal] { opacity: 1; transform: none; }   /* the sign itself doesn't fade; its letters rise */
 .can-reveal .footer__word span { translate: 0 105%; transition: translate .7s cubic-bezier(.2, 1.15, .3, 1); transition-delay: calc(var(--i) * 55ms); }
-.can-reveal .footer__peek img { translate: 0 100%; transition: translate .5s cubic-bezier(.3, 1.5, .5, 1) .85s; }
-.can-reveal .footer__sign.is-in .footer__word span, .can-reveal .footer__sign.is-in .footer__peek img { translate: 0 0; }
+.can-reveal .footer__sign.is-in .footer__word span { translate: 0 0; }
 @media (orientation: portrait) and (max-width: 1024px) {
-  .footer__sign { margin-top: .5em; }   /* phones: room for Omar to peek without covering the small print */
+  .footer__sign { margin-top: 28px; }
+  /* phones: a minimal, centred footer: tagline, links in a row, socials in a row, then the base bar stacked */
+  .footer__main { padding-top: 56px; }
+  .footer__main .footer__grid { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 28px; }
+  .footer__main .footer__grid > * { grid-column: auto; }
+  .footer__tag { margin-inline: auto; font-size: 38px; max-width: 9em; }
+  .footer__nav a { font-size: 22px; }
+  .footer__hi ul { flex-direction: column; gap: 4px; }
+  .footer__head { display: none; }
+  .footer__grid ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; }
+  .footer__main .footer__grid li + li { margin-top: 0; }
+  .footer__base { flex-direction: column-reverse; justify-content: center; margin-top: 32px; gap: 12px; }
 }
 
 /* ---------- font roles: Londrina Solid for headings, Konkhmer Sleokchher for body text ---------- */
@@ -603,15 +625,6 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
 @keyframes line-in { from { opacity: 0; transform: translateY(30px) rotate(-1.5deg); } to { opacity: 1; transform: none; } }
 @keyframes slam { 0% { opacity: 0; transform: scale(2.6) rotate(-8deg); } 60% { opacity: 1; transform: scale(.94) rotate(1deg); } 75% { transform: scale(1.03) translateX(-4px); } 88% { transform: translateX(3px); } 100% { opacity: 1; transform: none; } }
 
-.can-reveal .story__docs[data-reveal] { opacity: 1; transform: none; }
-.can-reveal .story__file, .can-reveal .story__tape, .can-reveal .story__folder { opacity: 0; }
-.story__docs.is-in .story__file { animation: file-in .6s cubic-bezier(.2, 1.15, .3, 1) forwards; }
-.story__docs.is-in .story__tape { animation: tape-in .25s ease-out .35s forwards; }
-.story__docs.is-in .story__folder { animation: folder-in .65s cubic-bezier(.2, 1.15, .3, 1) .12s forwards; }
-@keyframes file-in { from { opacity: 0; transform: translateY(-70px) rotate(-8deg); } to { opacity: 1; transform: none; } }
-@keyframes tape-in { from { opacity: 0; transform: scaleX(.3); } to { opacity: 1; transform: none; } }
-@keyframes folder-in { from { opacity: 0; transform: translate(110px, 40px) rotate(16deg); } to { opacity: 1; transform: none; } }
-
 .can-reveal .invest__art[data-reveal] { transform: rotate(-12deg) scale(.8); transition: opacity .45s ease, transform .7s cubic-bezier(.2, 1.35, .4, 1); }
 .can-reveal .invest__art[data-reveal].is-in, .can-reveal .cater__title[data-reveal].is-in { transform: none; }
 .can-reveal .stall__title.is-in span { display: inline-block; animation: wiggle .7s ease-in-out .2s 2; }
@@ -650,16 +663,10 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
   @keyframes sx-dots-b { from { translate: 0 -60px; } to { translate: 0 60px; } }
   .story__file, .story__tape { animation: sx-file linear both; animation-timeline: --sec; }
   .story__folder { animation: sx-folder linear both; animation-timeline: --sec; }
-  .story__docs.is-in .story__file { animation: sx-file linear both, file-in .6s cubic-bezier(.2, 1.15, .3, 1) forwards; animation-timeline: --sec, auto; }
-  .story__docs.is-in .story__tape { animation: sx-file linear both, tape-in .25s ease-out .35s forwards; animation-timeline: --sec, auto; }
-  .story__docs.is-in .story__folder { animation: sx-folder linear both, folder-in .65s cubic-bezier(.2, 1.15, .3, 1) .12s forwards; animation-timeline: --sec, auto; }
   .story__dots--a { animation: sx-dots-a linear both; animation-timeline: --sec; }
   .story__dots--b, .story__dots--c { animation: sx-dots-b linear both; animation-timeline: --sec; }
-  @media (orientation: portrait) and (max-width: 1024px) {  /* phones: the case files just drop in, no float (it stuttered there) */
+  @media (orientation: portrait) and (max-width: 1024px) {  /* phones: the case files stay still (the float stuttered there) */
     .story__file, .story__tape, .story__folder { animation: none; }
-    .story__docs.is-in .story__file { animation: file-in .6s cubic-bezier(.2, 1.15, .3, 1) forwards; }
-    .story__docs.is-in .story__tape { animation: tape-in .25s ease-out .35s forwards; }
-    .story__docs.is-in .story__folder { animation: folder-in .65s cubic-bezier(.2, 1.15, .3, 1) .12s forwards; }
   }
 
   /* 02 investigation: the burger art floats up and tilts */

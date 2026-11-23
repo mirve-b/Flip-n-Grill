@@ -29,6 +29,13 @@ createRoot(document.getElementById("root")!).render(
  * for the fonts and the hero burger, and never longer than 4s. Adding .is-ready plays
  * the hero's entrance as the splash fades.
  */
+// no scrolling while the splash is up: overflow: hidden (styles.css) isn't enough on iPhones, so swallow the gestures too
+const splashUp = !!document.getElementById("splash") && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
+const block = (e: Event) => { if (!(e instanceof KeyboardEvent) || SCROLL_KEYS.has(e.key)) e.preventDefault(); };
+const lockEvents = ["wheel", "touchmove", "keydown"] as const;
+if (splashUp) lockEvents.forEach((t) => addEventListener(t, block, { passive: false }));
+
 const MIN = 2000;
 const MAX = 4000;
 const hero = new Image();
@@ -42,6 +49,8 @@ Promise.race([ready, new Promise((r) => setTimeout(r, MAX))]).then(() => {
     // instant you scroll to them instead of the browser decoding them on the way in
     document.querySelectorAll<HTMLImageElement>(".story__docs img, .invest__art img").forEach((img) => img.decode().catch(() => {}));
     const splash = document.getElementById("splash");
+    lockEvents.forEach((t) => removeEventListener(t, block));
+    scrollTo(0, 0);
     splash?.classList.add("is-done");
     setTimeout(() => splash?.remove(), 700);
   }, Math.max(0, MIN - elapsed()));
