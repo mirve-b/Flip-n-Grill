@@ -224,7 +224,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease;
 }
 /* the teal bar appears once you scroll down (Nav.tsx adds .nav--solid) */
-.nav--solid { background: var(--teal); border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+.nav--solid, .deck-open .nav { background: var(--teal); border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }  /* the brand book's slides need a solid bar */
 .nav__brand { font-weight: 900; font-size: clamp(20px, 2vw, 30px); line-height: 1; letter-spacing: .01em; text-transform: uppercase; text-decoration: none; }
 .nav__links { display: flex; gap: clamp(20px, 4.3vw, 62px); }
 .nav__links a { display: inline-block; font-weight: 400; font-size: clamp(14px, 1.25vw, 18px); letter-spacing: .06em; text-transform: uppercase; text-decoration: none; transition: transform .2s ease, color .3s ease; }
@@ -449,6 +449,29 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .form__error { margin-top: 16px; color: var(--red); font-weight: 700; }
 .form__submit { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-top: 26px; }
 .form__submit p { font-size: 14px; opacity: .8; }
+
+/* the booking as a quiz (Catering.tsx): one or two questions at a time, each sliding in */
+.quiz__top { display: flex; align-items: center; gap: 14px; margin-bottom: clamp(18px, 2.4vw, 30px); }
+.quiz__count { font-family: var(--f-mono); font-size: 13px; letter-spacing: .12em; white-space: nowrap; }
+.quiz__bar { flex: 1; height: 8px; border: 2px solid var(--ink); border-radius: 99px; background: #fbf3e6; overflow: hidden; }
+.quiz__bar i { display: block; height: 100%; background: var(--orange); transition: width .45s cubic-bezier(.3, 1.2, .5, 1); }
+.quiz__q { border: 0; min-width: 0; animation: quiz-in .45s cubic-bezier(.2, 1.1, .3, 1); }
+.quiz__q .form__grid { margin-top: 0; }
+@keyframes quiz-in { from { opacity: 0; translate: 40px 0; } }
+.quiz__ask { font-family: var(--f-head); font-weight: 900; font-size: clamp(32px, 4vw, 58px); line-height: 1; text-transform: uppercase; margin-bottom: clamp(16px, 2vw, 26px); }
+.quiz__q .chip { font-size: clamp(15px, 1.3vw, 18px); padding: 10px 20px; transition: transform .2s cubic-bezier(.3, 1.6, .5, 1); }
+.quiz__q .chip:hover { transform: translateY(-2px) rotate(-1deg); }
+.quiz__q .chip.is-on { transform: scale(1.05) rotate(-2deg); }
+.quiz__sfx {   /* the comic shout for the occasion they picked */
+  display: inline-block; margin-top: 18px; padding: .2em .7em; font-family: var(--f-head); font-weight: 900; font-size: clamp(26px, 3vw, 40px);
+  color: var(--cream); background: var(--red); border: 3px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink); rotate: -4deg;
+  animation: quiz-sfx .45s cubic-bezier(.5, 0, .6, 1.5);
+}
+@keyframes quiz-sfx { from { opacity: 0; scale: 2; rotate: -12deg; } }
+.quiz__nav { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-top: clamp(22px, 3vw, 34px); }
+.quiz__nav p { font-size: 14px; opacity: .8; }
+.quiz__back { border: 0; background: none; font: inherit; font-weight: 700; cursor: pointer; padding: 8px 2px; opacity: .75; }
+.quiz__back:hover { opacity: 1; }
 .cater__done { display: grid; gap: 14px; justify-items: start; }
 .cater__donebig { font-weight: 900; font-size: 32px; text-transform: uppercase; color: var(--red); }
 
@@ -457,17 +480,34 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .footer__ctain { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
 .footer__big { font-weight: 900; font-size: clamp(40px, 5vw, 72px); line-height: 1; letter-spacing: -.02em; text-transform: uppercase; color: var(--teal); }
 .footer__btns { display: flex; flex-wrap: wrap; gap: 14px; }
-.footer__main { background: #000; color: var(--cream); padding-block: 56px 28px; }
-.footer__grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
+.footer__main { background: var(--ink); color: var(--cream); padding-top: 64px; overflow: hidden; }
+.footer__grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; align-items: start; }
 .footer__brand { font-weight: 800; font-size: 28px; text-transform: uppercase; letter-spacing: -.01em; }
-.footer__tag { margin-top: 8px; max-width: 360px; opacity: .8; }
+.footer__made { display: block; max-width: 300px; font-size: clamp(18px, 1.6vw, 22px); line-height: 1.3; text-decoration: none; opacity: .9; }
+.footer__made b { font-family: var(--f-head); font-weight: 900; letter-spacing: .06em; color: var(--orange); }
+.footer__made:hover b { text-decoration: underline; text-underline-offset: 4px; }
 .footer__head { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .6; margin-bottom: 10px; }
 .footer__main li + li { margin-top: 6px; }
 .footer__main a { text-decoration: none; font-weight: 600; }
 .footer__main a:hover { color: var(--orange); }
 .footer__bb { color: var(--orange); }   /* the brand book link stands out a little */
-.footer__mable { color: inherit; font-weight: 700; letter-spacing: .08em; text-decoration: underline; text-underline-offset: 3px; }
-.footer__small { margin-top: 44px; font-family: var(--f-mono); font-size: 12px; opacity: .5; }
+.footer__small { margin-top: 44px; font-family: var(--f-mono); font-size: 12px; opacity: .6; }
+
+/* the sign-off: a giant FLIP & GRILL across the full width, its bottom sliced off by the page edge. When the footer
+   comes into view each letter rises in turn (transform only), then Omar pops up from behind it to peek */
+.footer__sign { position: relative; margin-top: clamp(20px, 3vw, 40px); font-family: var(--f-head); font-weight: 900; font-size: 24.4vw; line-height: .8; }
+.footer__word { display: flex; justify-content: center; height: .66em; overflow: hidden; color: var(--orange); letter-spacing: -.01em; }
+.footer__word span { display: block; }
+.footer__amp { color: var(--cream); font-size: .42em; align-self: flex-start; margin: .35em .04em 0; }
+.footer__peek { position: absolute; left: 60%; bottom: calc(.66em - 2px); width: .5em; height: .42em; overflow: hidden; }
+.footer__peek img { width: 100%; }
+.can-reveal .footer__sign[data-reveal] { opacity: 1; transform: none; }   /* the sign itself doesn't fade; its letters rise */
+.can-reveal .footer__word span { translate: 0 105%; transition: translate .7s cubic-bezier(.2, 1.15, .3, 1); transition-delay: calc(var(--i) * 55ms); }
+.can-reveal .footer__peek img { translate: 0 100%; transition: translate .5s cubic-bezier(.3, 1.5, .5, 1) .85s; }
+.can-reveal .footer__sign.is-in .footer__word span, .can-reveal .footer__sign.is-in .footer__peek img { translate: 0 0; }
+@media (orientation: portrait) and (max-width: 1024px) {
+  .footer__sign { margin-top: .5em; }   /* phones: room for Omar to peek without covering the small print */
+}
 
 /* ---------- font roles: Londrina Solid for headings, Konkhmer Sleokchher for body text ---------- */
 h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard, .story__smash, .invest__title,

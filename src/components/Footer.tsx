@@ -1,6 +1,10 @@
+import type { CSSProperties } from "react";
 import { CONTACT } from "../data/contact";
 
-/** Orange call-to-action band (home page only), then the black footer. */
+// the giant sign-off at the very bottom: each letter rises in turn when the footer comes into view (styles.css)
+const WORD = ["F", "L", "I", "P", "&", "G", "R", "I", "L", "L"];
+
+/** Orange call-to-action band (home page only), then the black footer, signed off by a giant FLIP & GRILL. */
 export function Footer({ cta = true }: { cta?: boolean }) {
   const links = [
     CONTACT.instagram && { href: `https://instagram.com/${CONTACT.instagram}`, label: `Instagram @${CONTACT.instagram}` },
@@ -24,10 +28,9 @@ export function Footer({ cta = true }: { cta?: boolean }) {
 
       <div className="footer__main">
         <div className="wrap footer__grid">
-          <div>
-            <p className="footer__brand">Flip &amp; Grill</p>
-            <p className="footer__tag">Smash burgers. Stall at IBA Karachi, catering all over Karachi.</p>
-          </div>
+          <a className="footer__made" href="https://mable.cc" target="_blank" rel="noopener">
+            This brand was designed &amp; engineered by <b>MABLE</b> <span aria-hidden="true">↗</span>
+          </a>
           <nav aria-label="Footer">
             <p className="footer__head">Explore</p>
             <ul>
@@ -52,9 +55,18 @@ export function Footer({ cta = true }: { cta?: boolean }) {
           )}
         </div>
         <p className="wrap footer__small">
-          © {new Date().getFullYear()} Flip &amp; Grill · Karachi · A product of{" "}
-          <a className="footer__mable" href="https://mable.cc" target="_blank" rel="noopener">MABLE</a>
+          © {new Date().getFullYear()} Flip &amp; Grill · Karachi
         </p>
+
+        {/* the sign-off: edge to edge, cut off by the bottom of the page; Omar pops up behind it once it lands */}
+        <div className="footer__sign" data-reveal aria-hidden="true">
+          <span className="footer__peek"><img src="/mascots/omar-1.webp" alt="" loading="lazy" /></span>
+          <span className="footer__word">
+            {WORD.map((ch, i) => (
+              <span key={i} className={ch === "&" ? "footer__amp" : undefined} style={{ "--i": i } as CSSProperties}>{ch}</span>
+            ))}
+          </span>
+        </div>
       </div>
     </footer>
   );

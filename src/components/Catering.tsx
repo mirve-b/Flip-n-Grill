@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { CONTACT, EVENT_TYPES, KARACHI_AREAS } from "../data/contact";
 
 /** The contact page (#contact): three steps, then the booking form (sends via WhatsApp, email or Instagram). */
@@ -31,15 +31,34 @@ function buildMessage(f: FormData) {
 
 const sendLabel = CONTACT.whatsapp ? "Send on WhatsApp" : CONTACT.email ? "Send by email" : CONTACT.instagram ? "Send via Instagram DM" : "Send booking";
 
+// the booking, one or two questions at a time
+const QUESTIONS = ["What's the occasion?", "Who's booking?", "When, and how many?", "Where in Karachi?", "Anything else?"];
+
 export function Catering() {
-  const [type, setType] = useState<string>(EVENT_TYPES[0].id);
+  const [type, setType] = useState<string>("");
+  const [area, setArea] = useState<string>("");
+  const [step, setStep] = useState(0);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const form = useRef<HTMLFormElement>(null);
+  const last = QUESTIONS.length - 1;
+
+  // each new question: focus its first field (not on the very first, so the page doesn't jump on load)
+  useEffect(() => {
+    if (step === 0) return;
+    form.current?.querySelector<HTMLElement>(`[data-step="${step}"] input:not([type=radio]), [data-step="${step}"] textarea`)?.focus({ preventScroll: true });
+  }, [step]);
+
+  const pick = (set: (v: string) => void, v: string) => {
+    set(v);
+    window.setTimeout(() => setStep((s) => Math.min(last, s + 1)), 420);   // a beat to see the pick, then move on
+  };
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    if (!form.reportValidity()) return;
-    const msg = buildMessage(new FormData(form));
+    const f = e.currentTarget;
+    if (!f.reportValidity()) return;   // checks this question (later ones are disabled, earlier ones already passed)
+    if (step < last) { setStep(step + 1); return; }
+    const msg = buildMessage(new FormData(f));
 
     if (CONTACT.whatsapp) {
       window.open(`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
@@ -99,66 +118,89 @@ export function Catering() {
                 </p>
               )}
               {status.via === "copied" && <p>Your booking details are copied. Paste them to us on WhatsApp or Instagram.</p>}
-              <button className="btn btn--cream" onClick={() => setStatus({ kind: "idle" })}>Book another event</button>
+              <button className="btn btn--cream" onClick={() => { setStatus({ kind: "idle" }); setStep(0); setType(""); setArea(""); }}>Book another event</button>
             </div>
           ) : (
-            <form className="form" onSubmit={onSubmit}>
-              <fieldset className="form__types">
-                <legend>What's the occasion?</legend>
-                {EVENT_TYPES.map((t) => (
-                  <label key={t.id} className={`chip ${type === t.id ? "is-on" : ""}`}>
-                    <input type="radio" name="type" value={t.id} checked={type === t.id} onChange={() => setType(t.id)} />
-                    {t.label}
-                  </label>
-                ))}
+            <form className="form quiz" ref={form} onSubmit={onSubmit} noValidate={false}>
+              <div className="quiz__top">
+                <span className="quiz__count">{step + 1} / {QUESTIONS.length}</span>
+                <span className="quiz__bar" aria-hidden="true"><i style={{ width: `${((step + 1) / QUESTIONS.length) * 100}%` }} /></span>
+              </div>
+
+              {/* every question stays in the form (so all answers send), but only the current one shows; later ones are
+                  disabled so the browser only checks what's been asked so far */}
+              <fieldset data-step={0} hidden={step !== 0} className="quiz__q">
+                <legend className="quiz__ask">What's the occasion?</legend>
+                <div className="form__types">
+                  {EVENT_TYPES.map((t) => (
+                    <label key={t.id} className={`chip ${type === t.id ? "is-on" : ""}`}>
+                      <input type="radio" name="type" value={t.id} required checked={type === t.id} onChange={() => pick(setType, t.id)} />
+                      {t.label}
+                    </label>
+                  ))}
+                </div>
+                {type && <p className="quiz__sfx" key={type}>{EVENT_TYPES.find((t) => t.id === type)?.sfx}</p>}
               </fieldset>
 
-              <div className="form__grid">
+              <fieldset data-step={1} hidden={step !== 1} disabled={step < 1} className="quiz__q">
+                <legend className="quiz__ask">Who's booking?</legend>
+                <div className="form__grid">
+                  <label className="field">
+                    <span>Your name</span>
+                    <input name="name" required autoComplete="name" placeholder="Ayesha Khan" />
+                  </label>
+                  <label className="field">
+                    <span>WhatsApp / phone</span>
+                    <input
+                      name="phone" type="tel" required autoComplete="tel" inputMode="tel" placeholder="03xx xxxxxxx"
+                      pattern="^[+0-9][0-9\s\-]{9,15}$" title="A Pakistani mobile number, e.g. 0300 1234567"
+                    />
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset data-step={2} hidden={step !== 2} disabled={step < 2} className="quiz__q">
+                <legend className="quiz__ask">When, and how many?</legend>
+                <div className="form__grid">
+                  <label className="field">
+                    <span>Event date</span>
+                    <input name="date" type="date" required min={today()} />
+                  </label>
+                  <label className="field">
+                    <span>Roughly how many guests?</span>
+                    <input name="guests" type="number" required min={1} inputMode="numeric" placeholder="150" />
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset data-step={3} hidden={step !== 3} disabled={step < 3} className="quiz__q">
+                <legend className="quiz__ask">Where in Karachi?</legend>
+                <div className="form__types">
+                  {KARACHI_AREAS.map((a) => (
+                    <label key={a} className={`chip ${area === a ? "is-on" : ""}`}>
+                      <input type="radio" name="area" value={a} required checked={area === a} onChange={() => pick(setArea, a)} />
+                      {a}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset data-step={4} hidden={step !== 4} disabled={step < 4} className="quiz__q">
+                <legend className="quiz__ask">Anything else?</legend>
                 <label className="field">
-                  <span>Your name</span>
-                  <input name="name" required autoComplete="name" placeholder="Ayesha Khan" />
-                </label>
-                <label className="field">
-                  <span>WhatsApp / phone</span>
-                  <input
-                    name="phone"
-                    type="tel"
-                    required
-                    autoComplete="tel"
-                    inputMode="tel"
-                    placeholder="03xx xxxxxxx"
-                    pattern="^[+0-9][0-9\s\-]{9,15}$"
-                    title="A Pakistani mobile number, e.g. 0300 1234567"
-                  />
-                </label>
-                <label className="field">
-                  <span>Event date</span>
-                  <input name="date" type="date" required min={today()} />
-                </label>
-                <label className="field">
-                  <span>Roughly how many guests?</span>
-                  <input name="guests" type="number" required min={1} inputMode="numeric" placeholder="150" />
-                </label>
-                <label className="field field--wide">
-                  <span>Area in Karachi</span>
-                  <select name="area" required defaultValue="">
-                    <option value="" disabled>Pick an area…</option>
-                    {KARACHI_AREAS.map((a) => (
-                      <option key={a}>{a}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field field--wide">
-                  <span>Anything else? (venue, timings, menu ideas)</span>
+                  <span>Venue, timings, menu ideas (optional)</span>
                   <textarea name="notes" rows={3} placeholder="Mehndi at a farmhouse, food from 9pm, mostly smash burgers + curly fries…" />
                 </label>
-              </div>
+              </fieldset>
 
               {status.kind === "error" && <p className="form__error" role="alert">{status.msg}</p>}
 
-              <div className="form__submit">
-                <button type="submit" className="btn">{sendLabel} →</button>
-                <p>We cater anywhere in Karachi. Outside Karachi? Sorry, not yet!</p>
+              <div className="quiz__nav">
+                {step > 0 && <button type="button" className="quiz__back" onClick={() => setStep(step - 1)}>← Back</button>}
+                {(step === 1 || step === 2 || step === 4 || (step === 0 && type) || (step === 3 && area)) && (
+                  <button type="submit" className="btn">{step === last ? `${sendLabel} →` : "Next →"}</button>
+                )}
+                {step === last && <p>We cater anywhere in Karachi. Outside Karachi? Sorry, not yet!</p>}
               </div>
             </form>
           )}

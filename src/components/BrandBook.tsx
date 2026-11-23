@@ -1,33 +1,27 @@
-import type { CSSProperties } from "react";
-import { Dots } from "./Dots";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Sparks, type Spark } from "./Sparks";
 import "./brand.css";
 
 /**
- * The brand book (#brand): one long poster of the Flip & Grill identity. Logo, colour, type, the boys,
- * the kit of shapes and stickers, and the voice. Deliberately few words: the page shows rather than explains.
+ * The brand book (#brand) as a slide deck: one full-screen slide at a time. Move with the arrow keys / space /
+ * page keys, a wheel or trackpad flick, a swipe, or the dots on the right edge. Each slide glides in, then its
+ * pieces play their own entrance (".in" items, staggered by --d; see brand.css). Deliberately few words.
  */
+
+// the logo files in public/brand/; while WORDMARK is empty its slot shows a placeholder
+const LOGO = "/brand/logo.svg";
+const WORDMARK = "";
+
+// everything MABLE does for Flip & Grill
+const WORK = ["Brand identity", "Strategy", "Art direction", "Assets & kit", "Content", "Social media", "Website"];
+
 const COLOURS = [
-  { name: "Grill", hex: "#006267", ink: "#f1d7b3", note: "the base" },
-  { name: "Flip", hex: "#FF9400", ink: "#1d130e", note: "the shout" },
-  { name: "Heat", hex: "#D54000", ink: "#f1d7b3", note: "the story" },
-  { name: "Bun", hex: "#F1D7B3", ink: "#1d130e", note: "the paper" },
-  { name: "Spark", hex: "#FFD23F", ink: "#1d130e", note: "the bursts" },
-  { name: "Char", hex: "#1D130E", ink: "#f1d7b3", note: "the outline" },
-];
-
-const COVER_SPARKS: readonly Spark[] = [
-  [8, 22, 3.2, "#fff4dc", 0, "star"],
-  [90, 18, 2.6, "#ff9400", 0.8, "plus"],
-  [84, 74, 3.4, "#fff4dc", 1.6, "star"],
-  [14, 78, 2.4, "#ffd23f", 0.4, "plus"],
-  [50, 10, 2, "#fff4dc", 2.2, "star"],
-];
-
-const KIT_SPARKS: readonly Spark[] = [
-  [22, 40, 34, "#ffd23f", 0, "star"],
-  [62, 58, 26, "#ff9400", 0.7, "plus"],
-  [86, 32, 18, "#fff4dc", 1.3, "dot"],
+  { name: "Primary", hex: "#006267", ink: "#f1d7b3" },
+  { name: "Secondary", hex: "#FF9400", ink: "#1d130e" },
+  { name: "Accent 01", hex: "#D54000", ink: "#f1d7b3" },
+  { name: "Accent 02", hex: "#FFD23F", ink: "#1d130e" },
+  { name: "Light", hex: "#F1D7B3", ink: "#1d130e" },
+  { name: "Dark", hex: "#1D130E", ink: "#f1d7b3" },
 ];
 
 const BOYS = [
@@ -35,147 +29,291 @@ const BOYS = [
   { who: 2, tag: "I grill", say: "Careful!", bg: "var(--cream)" },
 ] as const;
 
-export function BrandBook() {
-  return (
-    <div className="bb" id="brand-book">
-      {/* cover */}
-      <section className="bb-cover">
-        <a className="bb-back" href="#top">← Back to the burgers</a>
-        <img className="bb-cover__burst" src="/art/starburst.webp" alt="" />
-        <Sparks items={COVER_SPARKS} />
-        <p className="bb-tag">Brand book · Vol. 01</p>
-        <h1 className="bb-word">
-          <span>FLIP<small>&amp;</small></span>
-          <span className="bb-word__grill">GRILL</span>
-        </h1>
-        <p className="bb-cover__line">Smash burgers. Loud on purpose.</p>
-        {BOYS.map((b) => (
-          <img key={b.who} className={`bb-cover__boy bb-cover__boy--${b.who}`} src={`/mascots/omar-${b.who}.webp`} alt="" />
-        ))}
-      </section>
+const COVER_SPARKS: readonly Spark[] = [
+  [10, 22, 3.2, "#fff4dc", 0, "star"],
+  [88, 18, 2.6, "#ff9400", 0.8, "plus"],
+  [84, 70, 3.4, "#fff4dc", 1.6, "star"],
+  [16, 76, 2.4, "#ffd23f", 0.4, "plus"],
+];
 
-      {/* 01 logo */}
-      <section className="bb-sec bb-logo">
-        <h2 className="bb-h"><span>01</span> Logo</h2>
-        <div className="bb-logo__grid" data-reveal>
+type InProps = {
+  d?: number; as?: "div" | "p" | "h1" | "span" | "figure" | "ul" | "a"; className?: string; style?: CSSProperties; children?: ReactNode;
+  href?: string; target?: string; rel?: string; "aria-label"?: string;
+};
+/** an item that plays its entrance when its slide comes in; d = its place in the stagger */
+const In = ({ d = 0, as: Tag = "div", className = "", style, children, ...rest }: InProps) => (
+  <Tag className={`in ${className}`} style={{ ...style, "--d": d } as CSSProperties} {...rest}>{children}</Tag>
+);
+
+const Head = ({ n, title }: { n: string; title: string }) => (
+  <h2 className="bb-h in in--drop" style={{ "--d": 0 } as CSSProperties}><span>{n}</span> {title}</h2>
+);
+
+/* ---------- the slides ---------- */
+const SLIDES: { key: string; label: string; body: ReactNode }[] = [
+  {
+    key: "intro", label: "MABLE",
+    body: (
+      <div className="bb-intro">
+        <div className="bb-intro__text">
+          <In as="p" d={1} className="bb-intro__kicker">A MABLE project</In>
+          <In as="h1" d={2} className="bb-intro__title">Flip &amp; Grill</In>
+          <In as="p" d={3} className="bb-intro__sub">Brand book · Vol. 01</In>
+          <In as="ul" d={4} className="bb-intro__work" aria-label="What MABLE does for Flip & Grill">
+            {WORK.map((w) => <li key={w}>{w}</li>)}
+          </In>
+          <In as="a" d={6} className="bb-intro__credit" href="https://mable.cc" target="_blank" rel="noopener">
+            Designed &amp; engineered by <img className="bb-intro__bunny" src="/brand/mable-bunny.svg" alt="" /> <b>MABLE</b> <span aria-hidden="true">↗</span>
+          </In>
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "cover", label: "Flip & Grill",
+    body: (
+      <div className="bb-cover">
+        <img className="bb-cover__burst in in--spin" src="/art/starburst.webp" alt="" />
+        <Sparks items={COVER_SPARKS} />
+        <In as="p" d={1} className="bb-tag in--drop">Brand book · Vol. 01</In>
+        <h1 className="bb-word">
+          <In as="span" d={2} className="in--stamp">FLIP<small>&amp;</small></In>
+          <In as="span" d={3} className="bb-word__grill in--stamp">GRILL</In>
+        </h1>
+        <In as="p" d={4} className="bb-cover__line">Starring two Omars &amp; one very hot grill.</In>
+        {BOYS.map((b, i) => (
+          <In key={b.who} d={5 + i} className={`bb-cover__boy bb-cover__boy--${b.who} in--hop`}><img src={`/mascots/omar-${b.who}.webp`} alt="" /></In>
+        ))}
+      </div>
+    ),
+  },
+  {
+    key: "lettering", label: "Lettering",
+    body: (
+      <div className="bb-sec bb-logo">
+        <Head n="01" title="Lettering" />
+        <div className="bb-logo__grid">
           {[
             ["var(--teal)", "var(--orange)", "On grill"],
             ["var(--orange)", "var(--teal)", "On flip"],
             ["var(--cream)", "var(--ink)", "On bun"],
             ["var(--ink)", "var(--cream)", "On char"],
-          ].map(([bg, fg, label]) => (
-            <figure key={label} className="bb-logo__tile" style={{ "--bg": bg, "--fg": fg } as CSSProperties}>
+          ].map(([bg, fg, label], i) => (
+            <In as="figure" key={label} d={1 + i} className="bb-logo__tile in--pop" style={{ "--bg": bg, "--fg": fg } as CSSProperties}>
               <span className="bb-mark">FLIP<b>&amp;</b>GRILL</span>
               <figcaption>{label}</figcaption>
-            </figure>
+            </In>
           ))}
         </div>
-        <p className="bb-rule" data-reveal>Always caps. Always chunky. The <b>&amp;</b> stays small.</p>
-      </section>
-
-      {/* 02 colour */}
-      <section className="bb-sec bb-colour">
-        <h2 className="bb-h"><span>02</span> Colour</h2>
-        <div className="bb-colour__row" data-reveal>
-          {COLOURS.map((c) => (
-            <div key={c.name} className="bb-chip" style={{ "--c": c.hex, "--i": c.ink } as CSSProperties}>
+      </div>
+    ),
+  },
+  {
+    key: "colour", label: "Colour",
+    body: (
+      <div className="bb-sec bb-colour">
+        <Head n="02" title="Colour" />
+        <div className="bb-colour__row">
+          {COLOURS.map((c, i) => (
+            <In key={c.name} d={1 + i * 0.6} className="bb-chip in--rise" style={{ "--c": c.hex, "--i": c.ink } as CSSProperties}>
               <strong>{c.name}</strong>
               <span>{c.hex}</span>
-              <em>{c.note}</em>
-            </div>
+            </In>
           ))}
         </div>
-      </section>
-
-      {/* 03 type */}
-      <section className="bb-sec bb-type">
-        <h2 className="bb-h"><span>03</span> Type</h2>
-        <div className="bb-type__grid" data-reveal>
-          <div className="bb-font bb-font--head">
-            <span className="bb-font__aa">Aa</span>
-            <strong>Londrina Solid</strong>
-            <em>Headlines. Big, fat, happy.</em>
-          </div>
-          <div className="bb-font bb-font--body">
-            <span className="bb-font__aa">Aa</span>
-            <strong>Konkhmer Sleokchher</strong>
-            <em>Everything you read.</em>
-          </div>
-          <div className="bb-font bb-font--mono">
-            <span className="bb-font__aa">Aa</span>
-            <strong>Apple Symbols / Space Mono</strong>
-            <em>Labels, receipts, fine print.</em>
-          </div>
+      </div>
+    ),
+  },
+  {
+    key: "type", label: "Type",
+    body: (
+      <div className="bb-sec bb-type">
+        <Head n="03" title="Type" />
+        <div className="bb-type__grid">
+          {[
+            ["head", "Londrina Solid", "Headlines. Big, fat, happy."],
+            ["body", "Konkhmer Sleokchher", "Everything you read."],
+            ["mono", "Apple Symbols / Space Mono", "Labels, receipts, fine print."],
+          ].map(([k, name, use], i) => (
+            <In key={k} d={1 + i} className={`bb-font bb-font--${k} in--pop`}>
+              <span className="bb-font__aa">Aa</span>
+              <strong>{name}</strong>
+              <em>{use}</em>
+            </In>
+          ))}
         </div>
-      </section>
-
-      {/* 04 the boys */}
-      <section className="bb-sec bb-boys">
-        <h2 className="bb-h"><span>04</span> The boys</h2>
+      </div>
+    ),
+  },
+  {
+    key: "boys", label: "The boys",
+    body: (
+      <div className="bb-sec bb-boys">
+        <Head n="04" title="The boys" />
         <div className="bb-boys__row">
-          {BOYS.map((b) => (
-            <figure key={b.who} className="bb-boy" style={{ "--bg": b.bg } as CSSProperties} data-reveal>
+          {BOYS.map((b, i) => (
+            <In as="figure" key={b.who} d={1 + i * 1.5} className="bb-boy in--hop" style={{ "--bg": b.bg } as CSSProperties}>
               <span className="bb-boy__say">{b.say}</span>
               <img src={`/mascots/omar-${b.who}.webp`} alt={`Omar ${b.who}`} />
               <figcaption>
                 <b>Omar 0{b.who}</b>
                 <span className="bb-pill">{b.tag}</span>
               </figcaption>
-            </figure>
+            </In>
           ))}
         </div>
-        <p className="bb-rule" data-reveal>Two guys. Both named Omar. Never apart.</p>
-      </section>
-
-      {/* 05 kit */}
-      <section className="bb-sec bb-kit">
-        <h2 className="bb-h"><span>05</span> The kit</h2>
-        <div className="bb-kit__grid" data-reveal>
-          <div className="bb-kit__cell bb-kit__cell--burst"><img src="/art/starburst.webp" alt="" /><em>Burst</em></div>
-          <div className="bb-kit__cell bb-kit__cell--spark"><Sparks items={KIT_SPARKS} /><em>Sparkles</em></div>
-          <div className="bb-kit__cell bb-kit__cell--check"><span className="bb-check" /><em>Checker</em></div>
-          <div className="bb-kit__cell bb-kit__cell--dots"><Dots cols={5} rows={4} className="bb-dots" /><em>Dots</em></div>
-          <div className="bb-kit__cell bb-kit__cell--tape"><span className="bb-tape" /><em>Tape</em></div>
-          <div className="bb-kit__cell bb-kit__cell--labels">
-            <span className="bb-label bb-label--teal">Stall at IBA Karachi</span>
-            <span className="bb-label bb-label--orange">Catering all over karachi</span>
-            <em>Labels</em>
-          </div>
-          <div className="bb-kit__cell bb-kit__cell--stickers">
-            <img src="/art/smash-card.webp" alt="" />
-            <img src="/art/sticky-note.webp" alt="" />
-            <img src="/art/smiley.webp" alt="" />
-            <em>Stickers</em>
-          </div>
-          <div className="bb-kit__cell bb-kit__cell--buttons">
-            <span className="btn btn--cream">I'm at IBA!</span>
-            <span className="btn">Book for an event</span>
-            <em>Buttons</em>
-          </div>
+        <In as="p" d={4} className="bb-rule">Two guys. Both named Omar. Never apart.</In>
+      </div>
+    ),
+  },
+  {
+    key: "logo", label: "Logo",
+    body: (
+      <div className="bb-sec bb-mark-sec">
+        <Head n="05" title="Logo" />
+        <div className="bb-marks">
+          <In as="figure" d={1} className="bb-slot bb-slot--logo in--pop">
+            {LOGO ? <img src={LOGO} alt="Flip & Grill logo" /> : <span className="bb-slot__empty">Logo</span>}
+            <figcaption>Logo</figcaption>
+          </In>
+          <In as="figure" d={2} className="bb-slot bb-slot--word in--pop">
+            {WORDMARK ? <img src={WORDMARK} alt="Flip & Grill wordmark" /> : <span className="bb-slot__empty">Wordmark · coming soon</span>}
+            <figcaption>Wordmark</figcaption>
+          </In>
         </div>
-      </section>
-
-      {/* 06 voice */}
-      <section className="bb-sec bb-voice">
-        <h2 className="bb-h"><span>06</span> Voice</h2>
-        <div className="bb-voice__words" data-reveal>
-          <span>Loud.</span>
-          <span>Hungry.</span>
-          <span>Playful.</span>
+      </div>
+    ),
+  },
+  {
+    key: "voice", label: "Voice",
+    body: (
+      <div className="bb-sec bb-voice">
+        <Head n="06" title="Voice" />
+        <div className="bb-voice__words">
+          <In as="span" d={1} className="in--stamp">Comic.</In>
+          <In as="span" d={2} className="in--stamp">Whimsical.</In>
+          <In as="span" d={3} className="in--stamp">Full of character.</In>
         </div>
-        <div className="bb-voice__eg" data-reveal>
-          <span className="bb-say bb-say--yes">“SMASH!”</span>
-          <span className="bb-say bb-say--yes">“Come hungry again.”</span>
-          <span className="bb-say bb-say--no">“Premium artisanal dining experience.”</span>
+        <div className="bb-voice__eg">
+          {["“SMASH!”", "“Two guys. Both named Omar.”", "“Come hungry again.”"].map((t, i) => (
+            <In as="span" key={t} d={5 + i * 0.7} className="bb-say in--pop">{t}</In>
+          ))}
         </div>
-      </section>
+      </div>
+    ),
+  },
+  {
+    key: "end", label: "Fin",
+    body: (
+      <div className="bb-end">
+        <In d={0} className="in--pop"><img className="bb-end__logo" src={LOGO} alt="Flip & Grill" /></In>
+        <In as="a" d={2} className="btn btn--cream" href="#top">Back to the burgers</In>
+        <In as="a" d={3} className="bb-end__credit" href="https://mable.cc" target="_blank" rel="noopener">
+          <img src="/brand/mable-bunny.svg" alt="" /> Designed &amp; engineered by MABLE ↗
+        </In>
+      </div>
+    ),
+  },
+];
 
-      {/* sign-off */}
-      <section className="bb-end">
-        <img className="bb-end__burger" src="/art/burger.webp" alt="" />
-        <p className="bb-word bb-word--small"><span>FLIP<small>&amp;</small></span><span className="bb-word__grill">GRILL</span></p>
-        <a className="btn btn--cream" href="#top">Back to the burgers</a>
-      </section>
+export function BrandBook() {
+  const [index, setIndex] = useState(0);
+  const deck = useRef<HTMLDivElement>(null);
+  const lock = useRef(0);
+  const last = SLIDES.length - 1;
+
+  // jump straight to a slide (dots, buttons, Home/End)
+  const go = useCallback((to: number) => setIndex((i) => {
+    const n = Math.max(0, Math.min(last, to));
+    if (n !== i) lock.current = performance.now() + 850;
+    return n;
+  }), [last]);
+  // one step from a key, wheel or swipe: ignored while a slide is still gliding in, so one gesture = one slide
+  const step = useCallback((dir: 1 | -1) => setIndex((i) => {
+    if (performance.now() < lock.current) return i;
+    const n = Math.max(0, Math.min(last, i + dir));
+    if (n !== i) lock.current = performance.now() + 850;
+    return n;
+  }), [last]);
+
+  // the page behind the deck doesn't scroll while it's open
+  useEffect(() => {
+    document.documentElement.classList.add("deck-open");
+    return () => document.documentElement.classList.remove("deck-open");
+  }, []);
+
+  // keys, wheel / trackpad and swipes. A slide whose content is taller than the screen (small phones) scrolls first.
+  useEffect(() => {
+    const el = deck.current;
+    if (!el) return;
+    const canScroll = (dir: number) => {
+      const s = el.querySelector<HTMLElement>(".slide.is-active");
+      if (!s || s.scrollHeight <= s.clientHeight + 2) return false;
+      return dir > 0 ? s.scrollTop + s.clientHeight < s.scrollHeight - 2 : s.scrollTop > 2;
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); step(1); }
+      else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(e.key)) { e.preventDefault(); step(-1); }
+      else if (e.key === "Home") go(0);
+      else if (e.key === "End") go(last);
+    };
+    let acc = 0;
+    let accTimer = 0;
+    const onWheel = (e: WheelEvent) => {
+      const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      const dir = Math.sign(delta);
+      if (!dir || canScroll(dir)) return;
+      e.preventDefault();
+      acc += delta;
+      clearTimeout(accTimer);
+      accTimer = window.setTimeout(() => (acc = 0), 200);
+      if (Math.abs(acc) > 40) { step(acc > 0 ? 1 : -1); acc = 0; }
+    };
+    let sx = 0;
+    let sy = 0;
+    const onStart = (e: TouchEvent) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; };
+    const onEnd = (e: TouchEvent) => {
+      const dx = e.changedTouches[0].clientX - sx;
+      const dy = e.changedTouches[0].clientY - sy;
+      const sideways = Math.abs(dx) > Math.abs(dy);
+      const d = sideways ? dx : dy;
+      if (Math.abs(d) < 50) return;
+      const dir = d < 0 ? 1 : -1;
+      if (!sideways && canScroll(dir)) return;
+      step(dir);
+    };
+    window.addEventListener("keydown", onKey);
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchend", onEnd);
+      clearTimeout(accTimer);
+    };
+  }, [go, step, last]);
+
+  return (
+    <div className="deck" ref={deck} id="brand-book" data-slide={SLIDES[index].key}>
+      {SLIDES.map((s, i) => (
+        <section
+          key={s.key}
+          className={`slide slide--${s.key} ${i === index ? "is-active" : ""} ${i < index ? "is-past" : ""}`}
+          aria-hidden={i !== index}
+          aria-label={`${i + 1} of ${SLIDES.length}: ${s.label}`}
+        >
+          {s.body}
+        </section>
+      ))}
+
+      <a className="deck__back" href="#top">← Back to the burgers</a>
+      <nav className="deck__dots" aria-label="Slides">
+        {SLIDES.map((s, i) => (
+          <button key={s.key} aria-current={i === index} aria-label={`Slide ${i + 1}: ${s.label}`} className={i === index ? "is-on" : ""} onClick={() => go(i)} />
+        ))}
+      </nav>
     </div>
   );
 }

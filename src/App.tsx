@@ -53,7 +53,7 @@ export default function App() {
 
   // pauses off-screen loops and colours any rubber-band gap at the page's ends (src/sectionWatch.ts);
   // (nothing animates with the scroll position itself: see "motion" in styles.css)
-  useEffect(() => watchSections(page === "contact" ? "var(--red)" : "var(--hero-edge)"), [page]);
+  useEffect(() => watchSections(page === "contact" ? "var(--red)" : page === "brand" ? "#0a0a0a" : "var(--hero-edge)"), [page]);
 
   // gentle scroll reveals: each [data-reveal] fades/lifts in once, the first time it's seen
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function App() {
           <Stall />
         </main>
       )}
-      <Footer cta={page === "home"} />
+      {page !== "brand" && <Footer cta={page === "home"} />}  {/* the brand book is a full-screen slide deck */}
     </>
   );
 }
