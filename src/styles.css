@@ -6,7 +6,7 @@
   --hero-edge: #01585c;  /* average colour of the hero's paper texture: iOS paints the status-bar strip with it, so it blends in */
   --cream: #f1d7b3;
   --ink: #1d130e;
-  --black: #181818;
+  --black: var(--ink);   /* one dark everywhere: the kit's Dark brown */
 
   --f-head: "Londrina Solid", "Konkhmer Sleokchher", system-ui, sans-serif;  
   --f-sans: "Konkhmer Sleokchher", system-ui, sans-serif;                   /* body text */
@@ -18,8 +18,14 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
-html { touch-action: pan-y pinch-zoom; scroll-behavior: smooth; scroll-padding-top: 16px; overscroll-behavior-y: none; background: var(--hero-edge); }
+html { touch-action: pan-y pinch-zoom; scroll-behavior: smooth; scroll-padding-top: 16px; overscroll-behavior-y: none; }  /* no page background colour: iOS Safari would fill its bars with it */
 body { overscroll-behavior-y: none; }  /* up/down only, so the back/forward swipe still works */
+/* laptops and desktops (mouse or trackpad): a dark page background and a matching scrollbar, so the scrollbar track
+   and the trackpad's sideways bounce show brand dark instead of the browser's white. Phones and tablets keep no
+   background, so iPhone Safari leaves its top and bottom bars see-through */
+@media (hover: hover) and (pointer: fine) {
+  html { background: var(--ink); scrollbar-color: var(--orange) var(--ink); }
+}
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
   font-family: var(--f-sans); font-size: 16px; line-height: 1.5; color: var(--ink);
@@ -34,7 +40,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .wrap { width: 100%; max-width: 1440px; margin: 0 auto; padding-inline: var(--gutter); }
-.paper { background: var(--paper) url(/art/paper-teal.webp) center / cover; }
+.paper { --edge: #01575c; background: var(--paper) url(/art/paper-teal.webp) center / cover; }  /* --edge: the texture's average colour (sectionWatch.ts) */
 
 /* small section label: "01 / The problem" */
 .label { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .75; margin-bottom: 14px; }
@@ -61,12 +67,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
   position: absolute; pointer-events: none;
   width: calc((var(--cols) - 1) * var(--gap) + var(--dot));
   height: calc((var(--rows) - 1) * var(--gap) + var(--dot));
-  background: radial-gradient(circle, #000 calc(var(--dot) / 2 - .5px), transparent calc(var(--dot) / 2)) 0 0 / var(--gap) var(--gap);
+  background: radial-gradient(circle, var(--ink) calc(var(--dot) / 2 - .5px), transparent calc(var(--dot) / 2)) 0 0 / var(--gap) var(--gap);
   background-position: calc(var(--dot) / 2 - var(--gap) / 2) calc(var(--dot) / 2 - var(--gap) / 2);
 }
 
 /* ---------- hero: collage on a stage that fills the window ---------- */
-.hero { min-height: 100svh; display: grid; align-content: center; background-color: var(--paper); background-image: url(/art/paper-teal.webp); background-size: cover; background-position: center; overflow: hidden; }
+.hero { --edge: #01575c; min-height: 100svh; display: grid; align-content: center; background-color: var(--paper); background-image: url(/art/paper-teal.webp); background-size: cover; background-position: center; overflow: hidden; }
 .hero__stage {
   /* fills the visible window (whatever the browser bars leave). Pieces are placed by % across and % down,
      and sized in --u: 1% of the design's width (1412 x 926), shrunk to fit whichever side is tighter,
@@ -224,7 +230,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease;
 }
 /* the teal bar appears once you scroll down (Nav.tsx adds .nav--solid) */
-.nav--solid, .deck-open .nav { background: var(--teal); border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }  /* the brand book's slides need a solid bar */
+.nav--solid { background: var(--teal); border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
 .nav__brand { font-weight: 900; font-size: clamp(20px, 2vw, 30px); line-height: 1; letter-spacing: .01em; text-transform: uppercase; text-decoration: none; }
 .nav__links { display: flex; gap: clamp(20px, 4.3vw, 62px); }
 .nav__links a { display: inline-block; font-weight: 400; font-size: clamp(14px, 1.25vw, 18px); letter-spacing: .06em; text-transform: uppercase; text-decoration: none; transition: transform .2s ease, color .3s ease; }
@@ -294,7 +300,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .story__text p { font-weight: 600; font-size: clamp(18px, 1.75vw, 25px); line-height: 1.3; max-width: 25ch; }
 .story__text p + p { margin-top: .8em; }
 .story__text .label { font-size: 11px; font-weight: 400; letter-spacing: .12em; margin-bottom: 14px; }
-.story__text .story__hard { margin-top: 1.4em; font-weight: 900; font-size: clamp(32px, 3.2vw, 46px); line-height: 1; letter-spacing: .01em; color: #fbf3e6; text-shadow: 2px 3px 0 #000; }
+.story__text .story__hard { margin-top: 1.4em; font-weight: 900; font-size: clamp(32px, 3.2vw, 46px); line-height: 1; letter-spacing: .01em; color: #fbf3e6; text-shadow: 2px 3px 0 var(--ink); }
 .story__smash { font-family: var(--f-head); font-weight: 400 !important; font-size: clamp(64px, 8.3vw, 120px) !important; line-height: 1 !important; color: var(--cream); margin-top: .1em !important; }
 
 .story__docs { position: absolute; inset: 0; }
@@ -323,10 +329,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .invest__title { font-weight: 800; font-size: clamp(30px, 3.2vw, 46px); line-height: 1; letter-spacing: -.01em; text-transform: uppercase; max-width: 660px; }
 .invest__text > p:last-child { margin-top: .9em; font-weight: 700; font-size: clamp(18px, 2.08vw, 30px); line-height: 1.4; max-width: 560px; }
 
-/* ---------- 03 menu: the whole menu printed as a till receipt ---------- */
-.menu { background: var(--orange); padding-block: calc(110 * var(--s)) calc(140 * var(--s)); overflow: clip; }  /* clip, not hidden: hidden would make the section its own scroll area and freeze the receipt's unroll */
+/* ---------- 03 menu: the whole menu printed as a till receipt, on the same orange as the About section (Menu.tsx) ---------- */
+.menu { background: var(--orange); padding-block: calc(110 * var(--s)) calc(140 * var(--s)); overflow: clip; }
 .menu__layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: clamp(24px, 5vw, 90px); align-items: start; justify-content: center; }
-.menu__intro { position: sticky; top: 110px; }
 .menu__title { font-weight: 400; font-size: clamp(56px, 7vw, 100px); line-height: .85; letter-spacing: -.02em; color: var(--teal); text-transform: uppercase; }
 .menu__sub { font-size: clamp(15px, 1.4vw, 20px); text-transform: uppercase; margin-top: 8px; max-width: 22ch; }
 
@@ -347,19 +352,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
         conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--zz) 51% repeat-x;
 }
 .receipt { position: relative; }
-/* roll-open cover: an orange sheet (the section's colour) over the receipt and its shadow, with a paper roll on its top
-   edge. As you scroll into the menu it slides down and away, so the receipt unrolls top to bottom (scroll animations) */
-.receipt-cover { display: none; position: absolute; z-index: 3; inset: -44px -18px -22px -12px; overflow: hidden; pointer-events: none; }  /* room above for the whole roll */
-.receipt-curtain { position: absolute; left: 0; right: 0; top: 42px; bottom: 0; background: var(--orange); }  /* its top edge = the receipt's top */
-.receipt-roll {
-  /* a real paper roll: same cream as the receipt, shaded like a cylinder, centred on the sheet's edge so the paper
-     runs straight into it (no gap), as wide as the receipt plus its dark edge */
-  position: absolute; left: 7px; right: 2px; top: -17px; height: 34px; border-radius: 17px;
-  background: linear-gradient(#e9cfa6 0%, #fffaf0 24%, #f4dfbf 52%, #d8bc91 80%, #b4966c 100%);
-  box-shadow: 0 1px 0 rgba(29, 19, 14, .3), 0 12px 14px -8px rgba(29, 19, 14, .5);
-}
-.can-reveal .receipt-wrap::before { opacity: 0; transition: opacity .3s ease .3s; }
-.can-reveal .receipt-wrap.is-in::before { opacity: 1; }
 .receipt {
   --zz: 14px;
   background: var(--cream); color: var(--ink); font-family: var(--f-mono); font-size: 15px; line-height: 1.4;
@@ -384,12 +376,39 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .receipt__name { display: grid; font-size: 16px; }
 .receipt__qty, .receipt__price { font-size: 14px; }
 .receipt__item img { width: 52px; height: 42px; object-fit: contain; transition: scale .3s cubic-bezier(.3, 1.5, .5, 1), rotate .3s ease; }
-.receipt__item:hover, .receipt__item.is-on { background: rgba(255, 148, 0, .28); }
+.receipt__item:hover, .receipt__item.is-on { background: rgba(255, 148, 0, .3); }
 .receipt__item:hover img, .receipt__item.is-on img { scale: 1.18; rotate: -6deg; }
 
 .receipt__foot > * + * { margin-top: 8px; }
 .receipt__total { font-size: 18px; }
 .receipt__barcode { display: block; height: 54px; margin: 18px auto 10px; max-width: 280px; background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 5px, var(--ink) 5px 9px, transparent 9px 11px, var(--ink) 11px 12px, transparent 12px 16px); }
+
+/* roll-open: an orange sheet (the section's colour) covers the receipt, with a paper roll on its top edge. It's tied
+   to the scroll: once the receipt's top passes ~80% down the screen, the sheet slides down exactly as fast as you
+   scroll, so the receipt comes out of the roll line by line; scroll back and it rolls up again. --rh is the receipt's
+   height, so the roll stops exactly where the paper ends. Browsers without scroll-driven animations get a one-shot
+   unroll instead (Menu.tsx adds .is-unrolled) */
+.receipt-cover { display: none; position: absolute; z-index: 3; inset: -44px -18px -22px -12px; overflow: hidden; pointer-events: none; }
+.receipt-curtain { position: absolute; left: 0; right: 0; top: 42px; bottom: 0; background: var(--orange); }
+.receipt-roll {
+  position: absolute; left: 7px; right: 2px; top: -17px; height: 34px; border-radius: 17px;
+  background: linear-gradient(#e9cfa6 0%, #fffaf0 24%, #f4dfbf 52%, #d8bc91 80%, #b4966c 100%);
+  box-shadow: 0 1px 0 rgba(29, 19, 14, .3), 0 12px 14px -8px rgba(29, 19, 14, .5);
+}
+.can-reveal .receipt-cover { display: block; }
+@keyframes unroll { from { translate: 0 0; } to { translate: 0 calc(var(--rh, 1400px) + 14px); } }
+@keyframes roll-thin { 0% { scale: 1 1.3; opacity: 1; } 92% { scale: 1 .7; opacity: 1; } 100% { scale: 1 .25; opacity: 0; } }
+.can-reveal .receipt-curtain { animation: unroll 1.7s cubic-bezier(.5, .05, .35, 1) both paused; }
+.can-reveal .receipt-roll { animation: roll-thin 1.7s cubic-bezier(.5, .05, .35, 1) both paused; }
+.receipt-wrap.is-unrolled .receipt-curtain, .receipt-wrap.is-unrolled .receipt-roll { animation-play-state: running; }
+@supports (animation-timeline: view()) {
+  .receipt-wrap { view-timeline: --receipt block; }
+  .can-reveal .receipt-curtain, .can-reveal .receipt-roll {
+    animation-duration: auto; animation-timing-function: linear; animation-play-state: running;
+    animation-timeline: --receipt; animation-range: cover 20vh cover calc(20vh + var(--rh, 1400px) + 14px);
+  }
+}
+@media (prefers-reduced-motion: reduce) { .receipt-cover { display: none !important; } }
 
 /* ---------- 04 stall ---------- */
 .stall { color: var(--cream); padding-block: calc(110 * var(--s)) calc(130 * var(--s)); }
@@ -424,7 +443,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .cater__back { display: inline-block; margin-bottom: 18px; font-family: var(--f-mono); font-size: 15px; color: var(--cream); text-decoration: none; transition: transform .2s ease; }
 .cater__back:hover { transform: translateX(-4px); }
 .cater .label { color: #210000; }
-.cater__title { text-align: center; font-weight: 800; font-size: clamp(42px, 5.85vw, 84px); line-height: 1.05; letter-spacing: -.015em; color: #000; text-shadow: 0 4px 5px rgba(0, 0, 0, .3); }
+.cater__title { text-align: center; font-weight: 800; font-size: clamp(42px, 5.85vw, 84px); line-height: 1.05; letter-spacing: -.015em; color: var(--ink); text-shadow: 0 4px 5px rgba(0, 0, 0, .3); }
 .cater__sub { max-width: 640px; margin: 14px auto 0; text-align: center; font-weight: 700; font-size: clamp(16px, 1.4vw, 20px); color: var(--cream); }
 .cater__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1260px; margin: 48px auto 0; }
 .cater__steps li { background: var(--cream); border: 2px solid var(--ink); border-radius: 10px; padding: 22px 24px; }
@@ -479,74 +498,59 @@ button, input, select, textarea { font: inherit; color: inherit; }
 html:has(#splash:not(.is-done)), html:has(#splash:not(.is-done)) body { overflow: hidden; }
 
 /* ---------- footer ---------- */
+.footer { overflow: clip; }   /* the gum letters hang past the page end; clip, so they never make the page taller */
 .footer__cta { background: var(--orange); padding-block: calc(80 * var(--s)); }
 .footer__ctain { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
 .footer__big { font-weight: 900; font-size: clamp(40px, 5vw, 72px); line-height: 1; letter-spacing: -.02em; text-transform: uppercase; color: var(--teal); }
 .footer__btns { display: flex; flex-wrap: wrap; gap: 14px; }
-.footer__main { background: var(--ink); color: var(--cream); padding-top: 64px; overflow: hidden; }
-.footer__grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; align-items: start; }
-.footer__brand { font-weight: 800; font-size: 28px; text-transform: uppercase; letter-spacing: -.01em; }
-/* hierarchy: a big tagline, the page links in the heading face, contacts quieter, then a hairline base bar */
-.footer__tag { font-family: var(--f-head); font-size: clamp(32px, 3.8vw, 60px); line-height: .95; text-transform: uppercase; max-width: 11em; }
-.footer__tag em { font-style: normal; color: var(--orange); }
-.footer__head { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .5; margin-bottom: 14px; }
-.footer__main li + li { margin-top: 6px; }
-.footer__main a { text-decoration: none; font-weight: 600; }
-.footer__main a:hover { color: var(--orange); }
-.footer__nav a { font-family: var(--f-head); font-weight: 400; font-size: clamp(20px, 1.7vw, 26px); text-transform: uppercase; letter-spacing: .02em; line-height: 1.15; }
-.footer__nav li + li { margin-top: 2px; }
-.footer__hi a { font-size: 15px; font-weight: 500; opacity: .75; }
-.footer__hi a:hover { opacity: 1; }
-.footer__bb { color: var(--orange); }   /* the brand book link stands out a little */
-/* base bar: copyright one side, the MABLE STD credit the other, both small and on one line */
-.footer__base { margin-top: clamp(48px, 6vw, 80px); padding-top: 18px; border-top: 1px solid rgb(241 215 179 / .14);
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; }
-.footer__small { font-family: var(--f-mono); font-size: 12px; opacity: .55; }
-.footer__main .footer__made { font-family: var(--f-mono); font-size: 12px; font-weight: 400; letter-spacing: .04em; white-space: nowrap; opacity: .85; }
-.footer__made b { font-family: var(--f-head); font-weight: 400; font-size: 15px; letter-spacing: .06em; color: var(--orange); margin-left: .25em; }
-.footer__main .footer__made:hover { color: inherit; opacity: 1; }
-.footer__made:hover b { text-decoration: underline; text-underline-offset: 3px; }
+/* the footer as a last comic panel on dark paper: a big speech bubble, the links, a quiet base line.
+   Links hover like the nav: they turn orange and lift a touch */
+.footer__main { position: relative; overflow: hidden; color: var(--cream); padding-top: clamp(64px, 8vw, 110px);
+  --edge: #0e0a06; background: #0e0a06 url(/art/paper-dark.webp) center / cover; }
+.can-reveal .footer__main[data-reveal] { opacity: 1; transform: none; }   /* the panel stays put; the bubble pops in */
+.footer__panel { position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; gap: clamp(22px, 2.6vw, 34px);
+  padding-bottom: clamp(56px, 6vw, 90px); }
+.footer__bubble {
+  position: relative; max-width: 11em; padding: .22em .55em .26em; rotate: -2deg;
+  font-family: var(--f-head); font-weight: 900; font-size: clamp(30px, 3.4vw, 52px); line-height: .92; text-transform: uppercase;
+  color: var(--ink); background: var(--cream); border: 3px solid var(--ink); border-radius: 22px; box-shadow: 4px 5px 0 rgba(0, 0, 0, .45);
+}
+.footer__bubble::before, .footer__bubble::after { content: ""; position: absolute; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.footer__bubble::before { left: 14%; top: calc(100% - 1px); width: 32px; height: 28px; background: var(--ink); }
+.footer__bubble::after { left: calc(14% + 3px); top: calc(100% - 4px); width: 24px; height: 21px; background: var(--cream); }
+.footer__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px clamp(18px, 2.4vw, 36px);
+  font-family: var(--f-head); font-size: clamp(24px, 2.3vw, 32px); text-transform: uppercase; letter-spacing: .02em; }
+.footer__social { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 24px; font-family: var(--f-mono); font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+.footer__main a { display: inline-block; color: inherit; text-decoration: none; transition: transform .2s ease, color .2s ease; }
+.footer__main a:hover { color: var(--orange); transform: translateY(-2px); }
+.footer__base { position: relative; z-index: 1; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 28px;
+  padding-block: 18px calc(18px + env(safe-area-inset-bottom)); border-top: 1px solid rgb(241 215 179 / .18);
+  font-family: var(--f-mono); font-size: 12px; letter-spacing: .04em; opacity: .85; }
+.can-reveal .footer__bubble { opacity: 0; scale: .6; transition: opacity .3s ease .1s, scale .5s cubic-bezier(.3, 1.6, .5, 1) .1s; }
+.can-reveal .footer__main.is-in .footer__bubble { opacity: 1; scale: 1; }
 
-/* the sign-off: a giant FLIP & GRILL across the full width, its bottom sliced off by the page edge. When the footer
-   comes into view each letter rises in turn (transform only) */
-.footer__sign { position: relative; margin-top: clamp(20px, 3vw, 40px); font-family: var(--f-head); font-weight: 900; font-size: 24.4vw; line-height: .8; }
-.footer__word { display: flex; justify-content: center; height: .66em; overflow: hidden; color: var(--orange); letter-spacing: -.01em; }
-.footer__word span { display: block; }
-.footer__amp { color: var(--cream); font-size: .42em; align-self: flex-start; margin: .35em .04em 0; }
-.can-reveal .footer__sign[data-reveal] { opacity: 1; transform: none; }   /* the sign itself doesn't fade; its letters rise */
-.can-reveal .footer__word span { translate: 0 105%; transition: translate .7s cubic-bezier(.2, 1.15, .3, 1); transition-delay: calc(var(--i) * 55ms); }
-.can-reveal .footer__sign.is-in .footer__word span { translate: 0 0; }
 @media (orientation: portrait) and (max-width: 1024px) {
-  .footer__sign { margin-top: 28px; }
-  /* phones: a minimal, centred footer: tagline, links in a row, socials in a row, then the base bar stacked */
-  .footer__main { padding-top: 56px; }
-  .footer__main .footer__grid { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 28px; }
-  .footer__main .footer__grid > * { grid-column: auto; }
-  .footer__tag { margin-inline: auto; font-size: 38px; max-width: 9em; }
-  .footer__nav a { font-size: 22px; }
-  .footer__hi ul { flex-direction: column; gap: 4px; }
-  .footer__head { display: none; }
-  .footer__grid ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; }
-  .footer__main .footer__grid li + li { margin-top: 0; }
-  .footer__base { flex-direction: column-reverse; justify-content: center; margin-top: 32px; gap: 12px; }
+  .footer__panel { gap: 24px; }
+  .footer__bubble { font-size: 28px; }
+  .footer__links { flex-direction: column; align-items: center; gap: 2px; font-size: 26px; }
+  .footer__base { flex-direction: column; align-items: center; text-align: center; }
 }
 
 /* ---------- font roles: Londrina Solid for headings, Konkhmer Sleokchher for body text ---------- */
 h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard, .story__smash, .invest__title,
 .menu__title, .menu__pickname, .receipt__brand, .stall__title, .stall__where, .cater__title, .cater__formtitle,
-.cater__donebig, .footer__big, .footer__brand { font-family: var(--f-head); }
+.cater__donebig, .footer__big { font-family: var(--f-head); }
 .receipt__group h3 { font-family: var(--f-mono); }
 
 /* ---------- tablet & phone layouts for the sections below the hero ---------- */
 @media (max-width: 900px) {
   .menu__layout { grid-template-columns: minmax(0, 1fr); justify-items: center; }
-  .menu__intro { position: static; justify-self: stretch; }
+  .menu__intro { position: static; justify-self: stretch; text-align: center; }
+  .menu__sub { margin-inline: auto; }
   .menu__counter { display: none; }
   .receipt-wrap { width: min(100%, 520px); rotate: .8deg; }
   .receipt__item small { display: block; }
   .stall__box { grid-template-columns: 1fr; }
-  .footer__grid { grid-template-columns: 1fr 1fr; }
-  .footer__grid > :first-child { grid-column: 1 / -1; }
 }
 @media (orientation: portrait) and (max-width: 1024px) {
   .story { padding-top: 0; }
@@ -562,9 +566,6 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
   .invest__art { width: 112%; margin-left: -6%; }
   .cater__steps { grid-template-columns: 1fr; }
   .form__grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 480px) {
-  .footer__grid { grid-template-columns: 1fr; }
 }
 
 /* ---------- motion: hero entrance (after the splash), scroll reveals, hovers ---------- */
@@ -631,11 +632,6 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
 @keyframes wiggle { 25% { transform: rotate(14deg); } 75% { transform: rotate(-10deg); } }
 .can-reveal .cater__title[data-reveal] { transform: scale(.94); transition: opacity .4s ease, transform .5s cubic-bezier(.2, 1.2, .4, 1); }
 
-/* the receipt prints out, top first */
-.can-reveal .receipt-wrap[data-reveal] { opacity: 1; transform: none; }
-.can-reveal .receipt { opacity: 0; transform: translateY(-40px) rotate(-2deg); }
-.receipt-wrap.is-in .receipt { animation: print .6s cubic-bezier(.2, 1.1, .3, 1) forwards; }
-@keyframes print { to { opacity: 1; transform: none; } }
 
 /* ---------- motion ----------
    Each section plays a quick one-time entrance as it comes into view (IntersectionObserver, App.tsx): the case file
@@ -673,25 +669,9 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
   @keyframes sx-invest { from { translate: 0 60px; rotate: -5deg; } to { translate: 0 -60px; rotate: 5deg; } }
   .invest__art { animation: sx-invest linear both; animation-timeline: --sec; }
 
-  /* 03 menu, 04 stall, booking steps: gentle floats */
-  @keyframes sx-up-40 { from { translate: 0 40px; } to { translate: 0 -40px; } }
+  /* 04 stall, booking steps: gentle floats */
   @keyframes sx-up-24 { from { translate: 0 24px; } to { translate: 0 -24px; } }
   @keyframes sx-down-24 { from { translate: 0 -24px; } to { translate: 0 24px; } }
-  @keyframes sx-counter { from { translate: 0 30px; rotate: -3deg; } to { translate: 0 -30px; rotate: 3deg; } }
-  .receipt-wrap { animation: sx-up-40 linear both; animation-timeline: --sec; view-timeline: --receipt block; }
-  /* the receipt unrolls out of a paper roll that waits ~80% down the screen: once the receipt's top passes that line,
-     the roll moves down exactly as fast as you scroll, so it stays put on screen and the receipt comes out of it line
-     by line until the whole thing is out (2000px covers the tallest receipt; past its end the cover is clipped away) */
-  /* --rh is the receipt's measured height (Menu.tsx): the roll travels exactly the paper's length, then it's done */
-  @keyframes unroll { from { translate: 0 0; } to { translate: 0 calc(var(--rh, 1400px) + 14px); } }
-  .receipt-cover { display: block; }
-  .receipt-curtain { animation: unroll linear both; animation-timeline: --receipt; animation-range: cover 20vh cover calc(20vh + var(--rh, 1400px) + 14px); }
-  /* the roll thins as the paper comes off it; when the paper runs out at the receipt's torn edge, the roll is used up and vanishes */
-  @keyframes roll-thin { 0% { scale: 1 1.3; opacity: 1; } 92% { scale: 1 .7; opacity: 1; } 100% { scale: 1 .25; opacity: 0; } }
-  .receipt-roll { animation: roll-thin linear both; animation-timeline: --receipt; animation-range: cover 20vh cover calc(20vh + var(--rh, 1400px) + 14px); }
-  .can-reveal .receipt { opacity: 1; transform: none; }   /* the unroll replaces the drop-in */
-  .receipt-wrap.is-in .receipt { animation: none; }
-  .menu__counter { animation: sx-counter linear both; animation-timeline: --sec; }
   .stall__map { animation: sx-up-24 linear both; animation-timeline: --sec; }
   .cater__steps li:nth-child(1) { animation: sx-down-24 linear both; animation-timeline: --sec; }
   .cater__steps li:nth-child(3) { animation: sx-up-24 linear both; animation-timeline: --sec; }
@@ -700,12 +680,10 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
   @media not ((orientation: portrait) and (max-width: 1024px)) {
     @keyframes sx-smash { 0%, 45% { translate: 0 0; } 100% { translate: 70px 0; } }
     @keyframes sx-left-40 { from { translate: 40px 0; } to { translate: -40px 0; } }
-    @keyframes sx-right-70 { from { translate: -70px 0; } to { translate: 70px 0; } }
     @keyframes sx-left-60 { from { translate: 60px 0; } to { translate: -60px 0; } }
     @keyframes sx-left-90 { from { translate: 90px 0; } to { translate: -90px 0; } }
     .story__text.is-in > .story__smash { animation: sx-smash linear both, slam .45s cubic-bezier(.5, 0, .6, 1.5) .2s forwards; animation-timeline: --sec, auto; }
     .invest__title { animation: sx-left-40 linear both; animation-timeline: --sec; }
-    .menu__title { animation: sx-right-70 linear both; animation-timeline: --sec; }
     .stall__title { animation: sx-left-60 linear both; animation-timeline: --sec; }
     .footer__big { animation: sx-left-90 linear both; animation-timeline: --sec; }
   }
@@ -713,8 +691,8 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
 
 /* ---------- phones: centre the text of 01, 02, 03 and the "Hungry yet?" band ---------- */
 @media (orientation: portrait) and (max-width: 1024px) {
-  .story__text, .invest__text, .menu__intro, .footer__ctain { text-align: center; }
-  .story__text p, .menu__sub, .invest__text > p:last-child { margin-inline: auto; }
+  .story__text, .invest__text, .footer__ctain { text-align: center; }
+  .story__text p, .invest__text > p:last-child { margin-inline: auto; }
   .footer__ctain { flex-direction: column; justify-content: center; }
   .footer__btns { justify-content: center; }
 }
@@ -722,7 +700,5 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .can-reveal .story__text > *, .can-reveal .story__file, .can-reveal .story__tape, .can-reveal .story__folder { opacity: 1; }
-  .can-reveal .receipt { opacity: 1; transform: none; }
-  .receipt-cover { display: none !important; }  /* no unroll: show the receipt */
 }
 

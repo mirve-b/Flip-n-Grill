@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { burgers, drinks, meals, sides, type MenuItem } from "../data/menu";
+import { burgers, meals, sides, type MenuItem } from "../data/menu";
 import { Dots } from "./Dots";
 
 /**
- * 03 / The takeout: the whole menu printed as a till receipt. Hovering (or
- * focusing) a line shows that item's art big on the left, like it just landed
- * on the counter.
+ * 03 / The takeout: the menu printed as a till receipt on orange. As you scroll, it unrolls out of a paper roll top
+ * to bottom, and rolls back up when you scroll back (scroll-driven, styles.css). Hovering, focusing or tapping a line
+ * shows that item's drawing big on the left, like it just landed on the counter.
  */
 const SECTIONS = [
   { title: "Burgers", items: burgers },
   { title: "Sides", items: sides },
   { title: "Make it a meal", items: meals },
-  { title: "Drinks", items: drinks },
 ];
 const COUNT = SECTIONS.reduce((n, s) => n + s.items.length, 0);
 
@@ -19,20 +18,25 @@ export function Menu() {
   const [active, setActive] = useState<MenuItem>(burgers[0]);
   const wrap = useRef<HTMLDivElement>(null);
 
-  // the roll-open animation needs the receipt's real height (--rh) so the roll stops exactly where the paper ends
   useEffect(() => {
     const el = wrap.current;
     const paper = el?.querySelector<HTMLElement>(".receipt");
     if (!el || !paper) return;
+    // the roll needs the receipt's real height (--rh) so it stops exactly where the paper ends
     const ro = new ResizeObserver(() => el.style.setProperty("--rh", `${paper.offsetHeight}px`));
     ro.observe(paper);
-    return () => ro.disconnect();
+    // browsers without scroll-driven animations: the unroll plays once, when the receipt is a quarter way up the screen
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { el.classList.add("is-unrolled"); io.disconnect(); }
+    }, { rootMargin: "0px 0px -25% 0px" });
+    io.observe(el);
+    return () => { ro.disconnect(); io.disconnect(); };
   }, []);
 
   return (
     <section className="menu" id="menu" aria-labelledby="menu-title">
       <div className="wrap menu__layout">
-        <div className="menu__intro" data-reveal>
+        <div className="menu__intro">
           <p className="label">03 / The takeout</p>
           <h2 className="menu__title" id="menu-title">Menu</h2>
           <p className="menu__sub">Enough talking!! Here's the good stuff.</p>
@@ -47,7 +51,7 @@ export function Menu() {
           </div>
         </div>
 
-        <div className="receipt-wrap" data-reveal ref={wrap}>
+        <div className="receipt-wrap" ref={wrap}>
           <div className="receipt">
             <header className="receipt__head">
               <p className="receipt__brand">Flip &amp; Grill</p>
@@ -73,7 +77,7 @@ export function Menu() {
                           {it.blurb && <small>{it.blurb}</small>}
                         </span>
                         {it.price != null && <span className="receipt__price">Rs {it.price}</span>}
-                        <img decoding="async" src={it.img} alt="" loading="lazy" />
+                        <img decoding="async" src={it.img} alt="" />
                       </button>
                     </li>
                   ))}
@@ -88,7 +92,7 @@ export function Menu() {
               <p>Thank you! Come hungry again.</p>
             </footer>
           </div>
-          {/* the receipt rolls open as you scroll in: a paper roll slides down, uncovering it top to bottom (styles.css) */}
+          {/* the roll-open cover: an orange sheet with a paper roll on its top edge slides down as you scroll */}
           <span className="receipt-cover" aria-hidden="true">
             <span className="receipt-curtain"><i className="receipt-roll" /></span>
           </span>

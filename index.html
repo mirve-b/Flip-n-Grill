@@ -19,7 +19,6 @@
     <meta name="twitter:title" content="Flip &amp; Grill | Smash Burgers at IBA Karachi" />
     <meta name="twitter:description" content="Smash burgers, curly fries and mozzy sticks. Stall at IBA Karachi, catering all over Karachi." />
     <meta name="twitter:image" content="https://flip-n-grill.vercel.app/og-image.jpg" />
-    <meta name="theme-color" content="#01585c" /> <!-- the hero texture's average colour (iOS paints the status-bar strip with it) -->
     <link rel="icon" href="/favicon.png" />
     <!-- self-hosted fonts (public/fonts): Londrina Solid for headings, Konkhmer Sleokchher for body text. Apple Symbols is a system font on Apple devices; others fall back to Space Mono. -->
     <link rel="preload" href="/fonts/londrina-solid-900.woff2" as="font" type="font/woff2" crossorigin />
@@ -34,18 +33,19 @@
       /* splash: a smash burger stacks itself, gets smashed, then the name stamps down. src/main.tsx fades it out */
       #splash { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #0d5a5c url(/art/paper-teal.webp) center / cover; transition: opacity .5s ease, visibility .5s; }
       #splash.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
-      .sp { display: grid; justify-items: center; gap: 26px; transition: transform .5s cubic-bezier(.6, 0, .4, 1); }
+      .sp { --bs: 1.35; display: grid; justify-items: center; gap: 26px; padding-top: calc((var(--bs) - 1) * 148px); transition: transform .5s cubic-bezier(.6, 0, .4, 1); }
+      @media (min-width: 900px) and (min-height: 640px) { .sp { --bs: 2; } }  /* laptops and big screens: a bigger burger */
       #splash.is-done .sp { transform: translateY(-30px) scale(.9); }
-      @media (orientation: landscape) and (max-height: 500px) { .sp { scale: .62; } }  /* phones held sideways: fit the short screen */
+      @media (orientation: landscape) and (max-height: 500px) { .sp { --bs: 1; scale: .62; } }  /* phones held sideways: fit the short screen */
       @media (orientation: landscape) and (max-height: 360px) { .sp { scale: .5; } }
-      .sp__stack { display: grid; justify-items: center; width: 168px; transform-origin: 50% 100%; animation: sp-smash .5s cubic-bezier(.3, 1.5, .5, 1) 1.05s both; }
+      .sp__stack { display: grid; justify-items: center; width: 168px; transform-origin: 50% 100%; scale: var(--bs); animation: sp-smash .5s cubic-bezier(.3, 1.5, .5, 1) 1.05s both; }
       .sp__stack i { display: block; border: 3px solid #1d130e; animation: sp-drop .45s cubic-bezier(.3, 1.4, .5, 1) both; animation-delay: var(--d); }
       .sp__top { width: 150px; height: 58px; background: #f2a541; border-radius: 80px 80px 12px 12px; margin-bottom: -3px; position: relative; z-index: 4;
         background-image: radial-gradient(ellipse 5px 3px at 30% 40%, #fff3d6 98%, transparent), radial-gradient(ellipse 5px 3px at 55% 28%, #fff3d6 98%, transparent), radial-gradient(ellipse 5px 3px at 72% 48%, #fff3d6 98%, transparent), radial-gradient(ellipse 5px 3px at 44% 58%, #fff3d6 98%, transparent); }
       .sp__cheese { width: 162px; height: 16px; background: #ffc21a; border-radius: 4px; margin-bottom: -3px; position: relative; z-index: 3; clip-path: polygon(0 0, 100% 0, 100% 60%, 82% 60%, 78% 100%, 72% 60%, 36% 60%, 30% 120%, 24% 60%, 0 60%); border-bottom: 0 !important; }
       .sp__patty { width: 168px; height: 30px; background: #5a2f1c; border-radius: 16px; margin-bottom: -3px; position: relative; z-index: 2; }
       .sp__bottom { width: 150px; height: 30px; background: #f2a541; border-radius: 8px 8px 22px 22px; position: relative; z-index: 1; }
-      .sp__shadow { width: 190px; height: 14px; margin-top: 8px; border-radius: 50%; background: rgba(0, 0, 0, .25); animation: sp-shadow .5s ease 1.05s both; }
+      .sp__shadow { width: 190px; height: 14px; margin-top: 8px; scale: var(--bs); border-radius: 50%; background: rgba(0, 0, 0, .25); animation: sp-shadow .5s ease 1.05s both; }
       .sp__word { font: 900 clamp(44px, 9vw, 76px)/1 "Londrina Solid", system-ui, sans-serif; color: #f1d7b3; letter-spacing: .01em; text-transform: uppercase; animation: sp-stamp .45s cubic-bezier(.5, 0, .6, 1.5) 1.25s both; }
       .sp__word b { color: #ff9400; font-weight: 400; }
       .sp__sub { font: 15px/1 "Apple Symbols", "Space Mono", ui-monospace, monospace; color: #f1d7b3; letter-spacing: .14em; text-transform: uppercase; margin-top: -14px; animation: sp-fade .4s ease .3s both; }

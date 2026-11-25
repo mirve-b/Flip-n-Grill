@@ -4,9 +4,9 @@ import App from "./App";
 import "./styles.css";
 
 // a reload always opens at the top: drop any #section a nav click left in the address bar
-// (only the #contact and #brand pages are kept) and stop the browser restoring the old scroll position
+// (only the #contact page is kept) and stop the browser restoring the old scroll position
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-if (location.hash && location.hash !== "#contact" && location.hash !== "#brand") history.replaceState(null, "", location.pathname + location.search);
+if (location.hash && location.hash !== "#contact") history.replaceState(null, "", location.pathname + location.search);
 
 // the mono text uses Apple Symbols, which only Apple devices have. Elsewhere (Android, Windows) it falls back to
 // Space Mono, which runs wider, so .no-apple-mono lets the hero labels shrink to the same width (styles.css)

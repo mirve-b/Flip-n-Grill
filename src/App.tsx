@@ -8,12 +8,11 @@ import { Menu } from "./components/Menu";
 import { Stall } from "./components/Stall";
 import { Catering } from "./components/Catering";
 import { Footer } from "./components/Footer";
-import { BrandBook } from "./components/BrandBook";
 import { watchSections } from "./sectionWatch";
 
-/** Three pages: the home page, the booking page at #contact and the brand book at #brand. */
-type Page = "home" | "contact" | "brand";
-const pageFromHash = (): Page => (location.hash === "#contact" ? "contact" : location.hash === "#brand" ? "brand" : "home");
+/** Two pages: the home page and the booking page at #contact. */
+type Page = "home" | "contact";
+const pageFromHash = (): Page => (location.hash === "#contact" ? "contact" : "home");
 
 export default function App() {
   const [page, setPage] = useState<Page>(pageFromHash);
@@ -53,7 +52,7 @@ export default function App() {
 
   // pauses off-screen loops and colours any rubber-band gap at the page's ends (src/sectionWatch.ts);
   // (nothing animates with the scroll position itself: see "motion" in styles.css)
-  useEffect(() => watchSections(page === "contact" ? "var(--red)" : page === "brand" ? "#1d130e" : "var(--hero-edge)"), [page]);
+  useEffect(() => watchSections(), [page]);
 
   // gentle scroll reveals: each [data-reveal] fades/lifts in once, the first time it's seen
   useEffect(() => {
@@ -80,10 +79,6 @@ export default function App() {
         <main>
           <Catering />
         </main>
-      ) : page === "brand" ? (
-        <main>
-          <BrandBook />
-        </main>
       ) : (
         <main>
           <Hero />
@@ -95,7 +90,7 @@ export default function App() {
           <Stall />
         </main>
       )}
-      {page !== "brand" && <Footer cta={page === "home"} />}  {/* the brand book is a full-screen slide deck */}
+      <Footer cta={page === "home"} />
     </>
   );
 }
