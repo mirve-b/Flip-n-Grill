@@ -18,8 +18,10 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
-html { touch-action: pan-y pinch-zoom; scroll-behavior: smooth; scroll-padding-top: 16px; overscroll-behavior-y: none; }  /* no page background colour: iOS Safari would fill its bars with it */
-body { overscroll-behavior-y: none; }  /* up/down only, so the back/forward swipe still works */
+html { touch-action: pan-y pinch-zoom; scroll-behavior: smooth; scroll-padding-top: 16px; overscroll-behavior: none; overflow-x: clip; }  /* no page background colour: iOS Safari would fill its bars with it */
+/* the page only ever moves up and down: anything poking past the sides (bursts, stickers, the receipt's shadow) is
+   clipped, and there's no sideways bounce. clip (not hidden) so pinned elements keep working */
+body { overscroll-behavior: none; overflow-x: clip; }
 /* laptops and desktops (mouse or trackpad): a dark page background and a matching scrollbar, so the scrollbar track
    and the trackpad's sideways bounce show brand dark instead of the browser's white. Phones and tablets keep no
    background, so iPhone Safari leaves its top and bottom bars see-through */
@@ -327,6 +329,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .invest__art img { width: 100%; height: auto; }
 .invest__text .label { color: var(--ink); }
 .invest__title { font-weight: 800; font-size: clamp(30px, 3.2vw, 46px); line-height: 1; letter-spacing: -.01em; text-transform: uppercase; max-width: 660px; }
+/* side by side: the heading stays on one line, sized to the text column (cqi = 1% of the column's width) */
+@media (min-width: 901px) and (orientation: landscape), (min-width: 1025px) {
+  .invest__text { container-type: inline-size; }
+  .invest__title { white-space: nowrap; max-width: none; font-size: min(44px, 6.6cqi); }
+}
 .invest__text > p:last-child { margin-top: .9em; font-weight: 700; font-size: clamp(18px, 2.08vw, 30px); line-height: 1.4; max-width: 560px; }
 
 /* ---------- 03 menu: the whole menu printed as a till receipt, on the same orange as the About section (Menu.tsx) ---------- */
@@ -481,12 +488,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .quiz__q .chip { font-size: clamp(15px, 1.3vw, 18px); padding: 10px 20px; transition: transform .2s cubic-bezier(.3, 1.6, .5, 1); }
 .quiz__q .chip:hover { transform: translateY(-2px) rotate(-1deg); }
 .quiz__q .chip.is-on { transform: scale(1.05) rotate(-2deg); }
-.quiz__sfx {   /* the comic shout for the occasion they picked */
-  display: inline-block; margin-top: 18px; padding: .2em .7em; font-family: var(--f-head); font-weight: 900; font-size: clamp(26px, 3vw, 40px);
-  color: var(--cream); background: var(--red); border: 3px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink); rotate: -4deg;
-  animation: quiz-sfx .45s cubic-bezier(.5, 0, .6, 1.5);
-}
-@keyframes quiz-sfx { from { opacity: 0; scale: 2; rotate: -12deg; } }
 .quiz__nav { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-top: clamp(22px, 3vw, 34px); }
 .quiz__nav p { font-size: 14px; opacity: .8; }
 .quiz__back { border: 0; background: none; font: inherit; font-weight: 700; cursor: pointer; padding: 8px 2px; opacity: .75; }
@@ -607,6 +608,52 @@ h1, h2, h3, .btn, .nav__brand, .nav__links a, .strip, .hero__title, .story__hard
 .stall__box:hover .stall__pin { transform: translateY(-6px); }
 .cater__steps li { transition: transform .25s ease; }
 .cater__steps li:hover { transform: translateY(-4px); }
+/* booking page intro (Catering.tsx sets --d, each piece's place in the opening sequence). Nothing plays until the
+   splash is gone (.is-ready) and the piece is on screen (.is-in). Only transform and opacity move.
+   - the back link and label slide in from the left
+   - the title's words drop in one by one and land with a squash
+   - the line under it rises in
+   - the three step cards are dealt onto the table: up from below, tilted, settling with a little wobble
+   - the booking card springs up, its progress bar fills, then the occasion chips pop in one after another */
+.can-reveal .cater [data-reveal] { opacity: 0; transform: none; transition: none; }
+.can-reveal .cater__title[data-reveal] { opacity: 1; transform: none; }   /* the words animate, not the title */
+.cater__word { display: inline-block; margin-right: .22em; }
+.cater__word:last-child { margin-right: 0; }
+.can-reveal .cater__word { opacity: 0; }
+/* the animations only fill "backwards" (hidden while they wait), then hand back to the normal styles, so hovers work */
+.is-ready .cater [data-reveal].is-in { opacity: 1; animation: ce-rise .7s cubic-bezier(.2, 1, .3, 1) backwards; animation-delay: var(--d, 0s); }
+.is-ready .cater .cater__back.is-in, .is-ready .cater .label.is-in { animation-name: ce-slide; animation-duration: .6s; }
+.is-ready .cater .cater__title.is-in { animation: none; }
+.is-ready .cater__title.is-in .cater__word { opacity: 1; animation: ce-word .75s cubic-bezier(.3, 1.3, .5, 1) backwards; animation-delay: calc(var(--d, 0s) + var(--w) * 90ms); }
+.is-ready .cater__steps li.is-in { animation-name: ce-deal; animation-duration: .85s; animation-timing-function: cubic-bezier(.25, 1.25, .45, 1); }
+.cater__steps li:nth-child(1) { --tilt: -7deg; }
+.cater__steps li:nth-child(2) { --tilt: 5deg; }
+.cater__steps li:nth-child(3) { --tilt: -4deg; }
+.is-ready .cater__card.is-in { animation-name: ce-spring; animation-duration: .9s; animation-timing-function: cubic-bezier(.22, 1.2, .36, 1); }
+.is-ready .cater__card.is-in .quiz__bar i { animation: ce-fill .9s cubic-bezier(.3, 1, .4, 1) backwards; animation-delay: calc(var(--d, 0s) + .45s); }
+.is-ready .cater__card.is-in [data-step="0"] .quiz__ask { animation: ce-rise .6s cubic-bezier(.2, 1, .3, 1) backwards; animation-delay: calc(var(--d, 0s) + .3s); }
+.is-ready .cater__card.is-in [data-step="0"] .chip { animation: ce-chip .5s cubic-bezier(.3, 1.6, .5, 1) backwards; animation-delay: calc(var(--d, 0s) + .5s + var(--ci, 0) * 60ms); }
+@keyframes ce-rise { from { opacity: 0; transform: translateY(34px); } to { opacity: 1; transform: none; } }
+@keyframes ce-slide { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+@keyframes ce-word {
+  0% { opacity: 0; transform: translateY(-90%) rotate(-10deg) scale(1.15); }
+  55% { opacity: 1; transform: translateY(6%) rotate(2deg) scale(1.06, .9); }
+  78% { transform: translateY(-3%) rotate(-1deg) scale(.98, 1.03); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes ce-deal {
+  0% { opacity: 0; transform: translateY(90px) rotate(var(--tilt)) scale(.9); }
+  60% { opacity: 1; transform: translateY(-6px) rotate(calc(var(--tilt) * -.25)) scale(1.01); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes ce-spring {
+  0% { opacity: 0; transform: translateY(80px) scale(.96); }
+  65% { opacity: 1; transform: translateY(-5px) scale(1.005); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes ce-fill { from { transform: scaleX(0); } }
+@keyframes ce-chip { from { opacity: 0; transform: scale(.6) rotate(-6deg); } to { opacity: 1; transform: none; } }
+.quiz__bar i { transform-origin: 0 50%; }
 
 /* scroll reveals (App.tsx adds .can-reveal, then .is-in per element). Kept quick (well under half a second) and
    started just before a block reaches the screen, so content is already there as you scroll, never arriving late. */

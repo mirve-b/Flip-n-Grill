@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { CONTACT, EVENT_TYPES, KARACHI_AREAS } from "../data/contact";
 
 /** The contact page (#contact): three steps, then the booking form (sends via WhatsApp, email or Instagram). */
@@ -40,7 +40,18 @@ export function Catering() {
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const form = useRef<HTMLFormElement>(null);
+  const page = useRef<HTMLElement>(null);
   const last = QUESTIONS.length - 1;
+
+  // the intro: everything already on screen when the page opens plays in one sequence, top to bottom (--d is each
+  // piece's delay); pieces further down play the moment they're scrolled to, with no delay, so the order never
+  // jumps. The moves themselves are in styles.css ("booking page intro")
+  useEffect(() => {
+    let k = 0;
+    page.current?.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
+      if (el.getBoundingClientRect().top < innerHeight * 0.95) el.style.setProperty("--d", `${(k++ * 0.11).toFixed(2)}s`);
+    });
+  }, []);
 
   // each new question: focus its first field (not on the very first, so the page doesn't jump on load)
   useEffect(() => {
@@ -48,10 +59,8 @@ export function Catering() {
     form.current?.querySelector<HTMLElement>(`[data-step="${step}"] input:not([type=radio]), [data-step="${step}"] textarea`)?.focus({ preventScroll: true });
   }, [step]);
 
-  const pick = (set: (v: string) => void, v: string) => {
-    set(v);
-    window.setTimeout(() => setStep((s) => Math.min(last, s + 1)), 420);   // a beat to see the pick, then move on
-  };
+  // picking a chip only selects it; the Next button (it shows once something's picked) moves on
+  const pick = (set: (v: string) => void, v: string) => set(v);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,11 +92,15 @@ export function Catering() {
   };
 
   return (
-    <section className="cater" id="contact-page" aria-labelledby="cater-title">
+    <section className="cater" id="contact-page" aria-labelledby="cater-title" ref={page}>
       <div className="wrap">
-        <a className="cater__back" href="#top">← Back to the burgers</a>
-        <p className="label label--center">Contact / Catering</p>
-        <h2 data-reveal className="cater__title" id="cater-title">We Bring The Grill!</h2>
+        <a className="cater__back" href="#top" data-reveal>← Back to the burgers</a>
+        <p className="label label--center" data-reveal>Contact / Catering</p>
+        <h2 data-reveal className="cater__title" id="cater-title" aria-label="We Bring The Grill!">
+          {["We", "Bring", "The", "Grill!"].map((w, i) => (
+            <span key={w} className="cater__word" aria-hidden="true" style={{ "--w": i } as CSSProperties}>{w}</span>
+          ))}
+        </h2>
         <p className="cater__sub" data-reveal>
           Bazaars, weddings, office days, campus events, birthdays. Wherever the crowd is, we'll be smashing burgers on
           site. Karachi only.
@@ -95,7 +108,7 @@ export function Catering() {
 
         <ol className="cater__steps">
           {STEPS.map((s) => (
-            <li key={s.n} data-reveal style={{ transitionDelay: `${Number(s.n) * 80}ms` }}>
+            <li key={s.n} data-reveal>
               <span>{s.n}</span>
               <h3>{s.title}</h3>
               <p>{s.text}</p>
@@ -132,14 +145,13 @@ export function Catering() {
               <fieldset data-step={0} hidden={step !== 0} className="quiz__q">
                 <legend className="quiz__ask">What's the occasion?</legend>
                 <div className="form__types">
-                  {EVENT_TYPES.map((t) => (
-                    <label key={t.id} className={`chip ${type === t.id ? "is-on" : ""}`}>
+                  {EVENT_TYPES.map((t, i) => (
+                    <label key={t.id} className={`chip ${type === t.id ? "is-on" : ""}`} style={{ "--ci": i } as CSSProperties}>
                       <input type="radio" name="type" value={t.id} required checked={type === t.id} onChange={() => pick(setType, t.id)} />
                       {t.label}
                     </label>
                   ))}
                 </div>
-                {type && <p className="quiz__sfx" key={type}>{EVENT_TYPES.find((t) => t.id === type)?.sfx}</p>}
               </fieldset>
 
               <fieldset data-step={1} hidden={step !== 1} disabled={step < 1} className="quiz__q">

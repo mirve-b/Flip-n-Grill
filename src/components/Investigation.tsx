@@ -21,7 +21,7 @@ export function Investigation() {
         </div>
         <div className="invest__text" data-reveal>
           <p className="label">02 / The investigation</p>
-          <h2 className="invest__title" id="invest-title">Good burgers don't just happen.</h2>
+          <h2 className="invest__title" id="invest-title">But good burgers don't just happen.</h2>
           <p>
             A lot of trial, a little error, countless taste tests. Until the patty, the crust and that signature sauce
             finally came together.
